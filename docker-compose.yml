@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  react-app:
+    build: .
+    container_name: mmhs_react
+    restart: always
+    ports:
+      - "2087:2087"
+    volumes:
+      - .:/usr/src/app
+    command: yarn start
