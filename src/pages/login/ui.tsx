@@ -124,6 +124,7 @@ export const LoginPage = () => {
   }, [isSignUp]);
 
   useEffect(() => {
+    console.log(import.meta.env.VITE_APP_SERVER_URL);
     if (timeLeft > 0) {
       const timer = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
@@ -197,8 +198,9 @@ export const LoginPage = () => {
         if (responseData.status == 200) {
           const data = responseData.data;
           const token = typeof data === "string" ? data : data?.accessToken;
+          const server = import.meta.env.REACT_APP_SERVER_URL || "http://127.0.0.1:3000";
 
-          fetch(`http://127.0.0.1:3000${redirectUrl}`, {
+          fetch(`${server}${redirectUrl}`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
