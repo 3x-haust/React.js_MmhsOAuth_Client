@@ -1,8 +1,16 @@
 FROM node:lts-alpine
-WORKDIR /usr/src/app
-COPY package.json yarn.lock* ./
-RUN yarn install --frozen-lockfile --silent
+
+WORKDIR /app
+
+COPY package.json yarn.loc*k ./
+
+RUN yarn install --production
+RUN yarn global add vite
+RUN yarn add @vitejs/plugin-react
+RUN mv node_modules ../
+
 COPY . .
-RUN yarn build
+
 EXPOSE 2087
-CMD ["yarn", "start"]
+
+CMD ["yarn", "dev"]

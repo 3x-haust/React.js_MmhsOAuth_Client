@@ -8,5 +8,5 @@ services:
     ports:
       - "2087:2087"
     volumes:
-      - .:/usr/src/app
-    command: yarn start
+      - .:/app
+    command: yarn preview --port 2087
