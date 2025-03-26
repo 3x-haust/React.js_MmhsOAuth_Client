@@ -15,7 +15,7 @@ export const OAuthCallback = () => {
             return;
         }
 
-        fetch(`${import.meta.env.VITE_APP_SERVER_URL}:3000/api/v1/oauth/token`, {
+        fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth/token`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ code, clientId, clientSecret, state }),
