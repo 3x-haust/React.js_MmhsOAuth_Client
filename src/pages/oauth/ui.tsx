@@ -8,8 +8,8 @@ export const OAuthCallback = () => {
     useEffect(() => {
         const code = searchParams.get("code");
         const state = searchParams.get("state");
-        const clientId = "5d225227-a760-4048-a6ae-e9d2a4a21da4";
-        const clientSecret = "83a5c237-e597-46f9-9b67-62340b30a9a6-6b4db5ca-d241-4496-a9c0-a0926b8a8f0d";
+        const clientId = searchParams.get("client_id");
+        const clientSecret = searchParams.get("client_secret");
         if (!code) {
             console.error("OAuth code is missing!");
             return;
