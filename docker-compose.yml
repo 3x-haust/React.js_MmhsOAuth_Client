@@ -9,4 +9,4 @@ services:
       - "2087:2087"
     volumes:
       - .:/app
-    command: yarn preview --port 2087
+    command: yarn dev --host --port 2087
