@@ -30,7 +30,34 @@ export const EditOAuthAppPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, login } = useAuthStore();
+
+  const refreshToken = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({refreshToken: Cookies.get('refreshToken')}),
+      });
+
+      const data = await response.json();
+
+      if (data.status === 200 && data.data?.accessToken) {
+        Cookies.set('accessToken', data.data.accessToken, { secure: true, sameSite: 'Strict' });
+        login(data.data.accessToken);
+        return data.data.accessToken;
+      } else {
+        throw new Error(data.message || 'Failed to refresh token');
+      }
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      navigate('/login?redirect=/oauth/manage');
+      return null;
+    }
+  };
 
   useEffect(() => {
     const token = Cookies.get("accessToken");
@@ -64,7 +91,14 @@ export const EditOAuthAppPage = () => {
           redirectUris: data.data.redirectUris,
           allowedUserType: data.data.allowedUserType,
         });
-      } else {
+      } else if (data.message === "Token expired") {
+        const newToken = await refreshToken();
+        if (newToken) {
+          fetchAppData();
+        } else {
+          navigate("/login?redirect=/oauth/edit");
+        }
+      }else {
         setError(data.message || "애플리케이션 정보를 불러오는데 실패했습니다.");
       }
     } catch (err) {

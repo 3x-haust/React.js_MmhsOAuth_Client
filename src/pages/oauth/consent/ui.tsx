@@ -16,7 +16,7 @@ interface ClientInfo {
 export const ConsentPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, login } = useAuthStore();
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,8 +27,35 @@ export const ConsentPage = () => {
   const scope = searchParams.get("scope");
   const responseType = searchParams.get("response_type");
 
+  const refreshToken = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({refreshToken: Cookies.get('refreshToken')}),
+      });
+
+      const data = await response.json();
+
+      if (data.status === 200 && data.data?.accessToken) {
+        Cookies.set('accessToken', data.data.accessToken, { secure: true, sameSite: 'Strict' });
+        login(data.data.accessToken);
+        return data.data.accessToken;
+      } else {
+        throw new Error(data.message || 'Failed to refresh token');
+      }
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      navigate('/login?redirect=/oauth/manage');
+      return null;
+    }
+  };
+
   useEffect(() => {
-    const token = Cookies.get("accessToken")
+    const token = Cookies.get("accessToken");
     if (!user && !token) {
       navigate(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       return;
@@ -40,58 +67,78 @@ export const ConsentPage = () => {
       return;
     }
 
-    fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${clientId}`, {
-      headers: {
-        Authorization: `Bearer ${Cookies.get("accessToken")}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchClientInfo = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${clientId}`, {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("accessToken")}`,
+          },
+        });
+        const data = await res.json();
+
         if (data.status === 200) {
           setClientInfo(data.data);
+        } else if (data.status === 401 && data.message === "TOKEN_EXPIRED") {
+          const refreshSuccess = await refreshToken();
+          if (refreshSuccess) {
+            fetchClientInfo();
+          } else {
+            navigate(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+          }
         } else {
           setError(data.message || "클라이언트 정보를 가져오는데 실패했습니다.");
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error fetching client info:", err);
         setError("클라이언트 정보를 가져오는데 실패했습니다.");
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClientInfo();
   }, [clientId, navigate, redirectUri, responseType, state, user]);
 
-  const handleConsent = (approved: boolean) => {
+  const handleConsent = async (approved: boolean) => {
     setLoading(true);
-    
-    fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth/consent`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${Cookies.get("accessToken")}`,
-      },
-      body: JSON.stringify({
-        client_id: clientId,
-        redirect_uri: redirectUri,
-        state,
-        approved,
-        scope,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Consent response:", data.status);
-        if (data.status === 200 && data.data?.url) {
-          window.location.href = data.data.url;
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth/consent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("accessToken")}`,
+        },
+        body: JSON.stringify({
+          client_id: clientId,
+          redirect_uri: redirectUri,
+          state,
+          approved,
+          scope,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.status === 200 && data.data?.url) {
+        window.location.href = data.data.url;
+      } else if (data.status === 401 && data.message === "TOKEN_EXPIRED") {
+        const refreshSuccess = await refreshToken();
+        if (refreshSuccess) {
+          handleConsent(approved);
         } else {
-          setError(data.message || "권한 부여 요청 처리 중 오류가 발생했습니다.");
+          navigate(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
           setLoading(false);
         }
-      })
-      .catch((err) => {
-        console.error("Error during consent:", err);
-        setError("권한 부여 요청 처리 중 오류가 발생했습니다.");
+      } else {
+        setError(data.message || "권한 부여 요청 처리 중 오류가 발생했습니다.");
         setLoading(false);
-      });
+      }
+    } catch (err) {
+      console.error("Error during consent:", err);
+      setError("권한 부여 요청 처리 중 오류가 발생했습니다.");
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -111,7 +158,7 @@ export const ConsentPage = () => {
   }
 
   const scopeItems = scope?.split(",").map((item) => item.trim()) || [];
-  
+
   const scopeDescriptions: Record<string, string> = {
     email: "이메일 주소",
     nickname: "닉네임",
@@ -227,7 +274,7 @@ const ScopeItem = styled.li`
   align-items: flex-start;
   padding: 10px 0;
   border-bottom: 1px solid #f0f0f0;
-  
+
   &:last-child {
     border-bottom: none;
   }
@@ -283,7 +330,7 @@ const ApproveButton = styled(Button)`
   border: none;
   flex: 1;
   margin-left: 10px;
-  
+
   &:hover {
     background-color: ${({ theme }) => theme.colors.primaryDark};
   }
@@ -295,7 +342,7 @@ const DenyButton = styled(Button)`
   border: 1px solid ${({ theme }) => theme.colors.border};
   flex: 1;
   margin-right: 10px;
-  
+
   &:hover {
     background-color: #f5f5f5;
   }

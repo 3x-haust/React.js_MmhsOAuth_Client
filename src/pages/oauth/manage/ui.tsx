@@ -25,7 +25,33 @@ export const ManageOAuthAppsPage = () => {
   const [deleting, setDeleting] = useState(false);
 
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, login } = useAuthStore();
+
+  const refreshToken = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({refreshToken: Cookies.get('refreshToken')}),
+      });
+
+      const data = await response.json();
+
+      if (data.status === 200 && data.data?.accessToken) {
+        Cookies.set('accessToken', data.data.accessToken, { secure: true, sameSite: 'Strict' });
+        login(data.data.accessToken);
+        return data.data.accessToken;
+      } else {
+        throw new Error(data.message || 'Failed to refresh token');
+      }
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      navigate('/login?redirect=/oauth/manage');
+      return null;
+    }
+  };
 
   useEffect(() => {
     const token = Cookies.get("accessToken");
@@ -37,14 +63,15 @@ export const ManageOAuthAppsPage = () => {
     fetchApps();
   }, [navigate, user]);
 
-  const fetchApps = async () => {
+  const fetchApps = async() => {
     try {
       setLoading(true);
+      const token = Cookies.get("accessToken");
       const response = await fetch(
         `${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client`,
         {
           headers: {
-            Authorization: `Bearer ${Cookies.get("accessToken")}`,
+            Authorization: `Bearer ${token}`,
             credentials: "include",
           },
         }
@@ -54,6 +81,13 @@ export const ManageOAuthAppsPage = () => {
 
       if (data.status === 200) {
         setApps(data.data || []);
+      } else if (data.message === 'TOKEN_EXPIRED') {
+        const newToken = await refreshToken();
+        if (newToken) {
+          return fetchApps();
+        } else {
+          navigate("/login?redirect=/oauth/manage");
+        }
       } else {
         setError(data.message || "앱 목록을 불러오는데 실패했습니다.");
       }
@@ -69,34 +103,46 @@ export const ManageOAuthAppsPage = () => {
     if (!appToDelete) return;
 
     setDeleting(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${
-          appToDelete.id
-        }`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${Cookies.get("accessToken")}`,
-          },
+    const deleteRequest = async (retryOnExpired = true) => {
+      const token = Cookies.get("accessToken");
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${
+            appToDelete.id
+          }`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.status === 200) {
+          setApps(apps.filter((app) => app.id !== appToDelete.id));
+          setShowDeleteModal(false);
+          setAppToDelete(null);
+        } else if (data.message === 'TOKEN_EXPIRED' && retryOnExpired) {
+          const newToken = await refreshToken();
+          if (newToken) {
+            return deleteRequest(false);
+          } else {
+            navigate("/login?redirect=/oauth/manage");
+          }
+        } else {
+          setError(data.message || "앱 삭제에 실패했습니다.");
         }
-      );
-
-      const data = await response.json();
-
-      if (data.status === 200) {
-        setApps(apps.filter((app) => app.id !== appToDelete.id));
-        setShowDeleteModal(false);
-        setAppToDelete(null);
-      } else {
-        setError(data.message || "앱 삭제에 실패했습니다.");
+      } catch (err) {
+        console.error("Error deleting OAuth app:", err);
+        setError("앱 삭제 중 오류가 발생했습니다.");
+      } finally {
+        setDeleting(false);
       }
-    } catch (err) {
-      console.error("Error deleting OAuth app:", err);
-      setError("앱 삭제 중 오류가 발생했습니다.");
-    } finally {
-      setDeleting(false);
-    }
+    };
+
+    await deleteRequest();
   };
 
   const openDeleteModal = (app: OAuthApp) => {
