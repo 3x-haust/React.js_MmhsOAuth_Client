@@ -11,4 +11,4 @@ services:
       - .env
     volumes:
       - .:/app
-    command: yarn dev --host --port 2087
+    command: yarn start --host --port 2087
