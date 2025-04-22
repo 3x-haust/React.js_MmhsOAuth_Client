@@ -113,12 +113,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const queryParams = new URLSearchParams(location.search);
-  const redirectUrl = queryParams.get("redirect");
-  const fullRedirectUrl = redirectUrl ? 
-    redirectUrl + (redirectUrl.includes('?') ? 
-      '&' + location.search.replace(/^\?redirect=[^&]*(&|$)/, '') : 
-      '?' + location.search.replace(/^\?redirect=[^&]*&?/, '')) : 
-    null;
+  const redirectUrl = queryParams.get("redirect") || "";
 
   useEffect(() => {
     setFormData({ email: "", nickname: "", password: "", code: "" });
@@ -223,12 +218,8 @@ export const LoginPage = () => {
             login(token);
           }
 
-          if (fullRedirectUrl) {                    
-            if (fullRedirectUrl.startsWith('/')) {
-              navigate(fullRedirectUrl);
-            } else {
-              window.location.href = fullRedirectUrl;
-            }
+          if (redirectUrl) {
+            navigate(redirectUrl);
           } else {
             navigate("/");
           }
