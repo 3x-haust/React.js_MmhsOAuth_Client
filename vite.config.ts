@@ -3,10 +3,12 @@ import react from '@vitejs/plugin-react'
 import fs from 'fs'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(() => {
+  const isDevCommand = process.env.npm_lifecycle_event === 'dev';
+  
   let config;
 
-  if (mode === 'development') {
+  if (isDevCommand) {
     config = {
       plugins: [react()],
       server: {
