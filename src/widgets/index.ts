@@ -1,1 +1,1 @@
-export { AuthModalWrapper } from './ui';
+export { AuthModalWrapper, Header } from './ui';
