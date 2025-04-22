@@ -1,0 +1,1 @@
+export { ManageOAuthAppsPage } from './ui';
