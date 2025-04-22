@@ -24,8 +24,9 @@ export default defineConfig(() => {
     config = {
       plugins: [react()],
       server: {
-        host: 'localhost',
-        port: 5173
+      host: 'localhost',
+      port: 5173,
+      allowedHosts: ['auth.mmhs.app']
       },
     };
   }
