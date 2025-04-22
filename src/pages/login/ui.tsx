@@ -114,13 +114,11 @@ export const LoginPage = () => {
   const { login } = useAuthStore();
   const queryParams = new URLSearchParams(location.search);
   const redirectUrl = queryParams.get("redirect") || "";
-  const fullRedirectUrl = redirectUrl +
+  const fullRedirectUrl = redirectUrl ? redirectUrl +
       "&response_type=" + queryParams.get("response_type") +
       "&state=" + queryParams.get("state") +
       "&redirect_uri=" + queryParams.get("redirect_uri") +
-      "&scope=" + queryParams.get("scope");
-
-  console.log("Full Redirect URL:", fullRedirectUrl);
+      "&scope=" + queryParams.get("scope") : "";
   
   useEffect(() => {
     setFormData({ email: "", nickname: "", password: "", code: "" });
