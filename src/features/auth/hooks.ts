@@ -1,39 +1,85 @@
 import { create } from 'zustand';
 import Cookies from 'js-cookie';
-import { logOut } from './api';
+import { logOut, getUserInfo } from './api';
+
+export interface User {
+  id: number;
+  email: string;
+  nickname: string;
+  role: 'student' | 'teacher';
+  major: 'software' | 'design' | 'web';
+  generation?: number;
+  admission?: number;
+  isGraduated?: boolean;
+}
 
 interface AuthStore {
   isLoggedIn: boolean;
-  login: (accessToken: string) => void;
+  user: User | null;
+  login: (accessToken: string, userData?: User) => void;
+  setUser: (userData: User) => void;
   logout: () => void;
-  initializeAuth: () => void;
+  initializeAuth: () => Promise<void>;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (isAuthModalOpen: boolean) => void;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
   isLoggedIn: false,
+  user: null,
   isAuthModalOpen: false,
 
   setIsAuthModalOpen: (isAuthModalOpen: boolean) => {
     set({ isAuthModalOpen });
   },
 
-  login: (accessToken: string) => {
+  login: (accessToken: string, userData?: User) => {
     Cookies.set('accessToken', accessToken, { secure: true, sameSite: 'Strict' });
-    set({ isLoggedIn: true });
+    if (userData) {
+      localStorage.setItem('userData', JSON.stringify(userData));
+      set({ isLoggedIn: true, user: userData });
+    } else {
+      set({ isLoggedIn: true });
+    }
+  },
+
+  setUser: (userData: User) => {
+    localStorage.setItem('userData', JSON.stringify(userData));
+    set({ user: userData });
   },
 
   logout: () => {
     Cookies.remove('accessToken');
+    localStorage.removeItem('userData');
     logOut();
-    set({ isLoggedIn: false });
+    set({ isLoggedIn: false, user: null });
   },
 
-  initializeAuth: () => {
+  initializeAuth: async () => {
     const accessToken = Cookies.get('accessToken');
+    
     if (accessToken) {
       set({ isLoggedIn: true });
+      
+      try {
+        const userDataStr = localStorage.getItem('userData');
+        if (userDataStr) {
+          try {
+            const userData = JSON.parse(userDataStr);
+            set({ user: userData });
+          } catch {
+            console.error('Failed to parse user data from localStorage');
+          }
+        }
+        
+        const userResponse = await getUserInfo();
+        if (userResponse.status === 200 && userResponse.data) {
+          localStorage.setItem('userData', JSON.stringify(userResponse.data));
+          set({ user: userResponse.data });
+        }
+      } catch (error) {
+        console.error('Failed to fetch user info during initialization:', error);
+      }
     }
   },
 }));

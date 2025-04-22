@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { styled } from "styled-components";
 import { theme } from "../../../app/styles";
 import { useAuthStore } from '../hooks';
-import { logIn, sendVerificationCode, signUp } from '../api';
+import { logIn, sendVerificationCode, signUp, getUserInfo } from '../api';
 
 const ModalOverlay = styled.div<{ $isOpen: boolean }>`
   display: ${props => props.$isOpen ? 'flex' : 'none'};
@@ -43,7 +43,7 @@ const Input = styled.input`
   border-radius: 4px;
   font-size: 1rem;
   &:focus {
-    outline: 2px solid ${theme.primary};
+    outline: 2px solid ${theme.colors.primary};
   }
 `;
 
@@ -121,7 +121,7 @@ export const AuthModal = ({ isOpen, onClose }: {
     code: false
   });
 
-  const { login } = useAuthStore();
+  const { login, setUser } = useAuthStore();
 
   useEffect(() => {
     if (!isOpen) {
@@ -209,6 +209,15 @@ export const AuthModal = ({ isOpen, onClose }: {
         if (responseData.status == 200) {
           if (typeof responseData.data === 'object') {
             login(responseData.data.accessToken);
+            
+            try {
+              const userInfoResponse = await getUserInfo(responseData.data.accessToken);
+              if (userInfoResponse.status === 200 && userInfoResponse.data) {
+                setUser(userInfoResponse.data);
+              }
+            } catch (userInfoError) {
+              console.error('Failed to fetch user info:', userInfoError);
+            }
           } else {
             showError('로그인 데이터가 올바르지 않습니다');
           }
