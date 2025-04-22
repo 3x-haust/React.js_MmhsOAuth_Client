@@ -6,8 +6,10 @@ import {
   logIn,
   sendVerificationCode,
   signUp,
+  getUserInfo,
 } from "../../features/auth/api/index";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../features/auth";
 
 const PageContainer = styled.div`
   display: flex;
@@ -108,8 +110,15 @@ export const LoginPage = () => {
     code: false,
   });
   const location = useLocation();
+  const navigate = useNavigate();
+  const { login } = useAuthStore();
   const queryParams = new URLSearchParams(location.search);
-  const redirectUrl = queryParams.get("redirect") || "";
+  const redirectUrl = queryParams.get("redirect");
+  const fullRedirectUrl = redirectUrl ? 
+    redirectUrl + (redirectUrl.includes('?') ? 
+      '&' + location.search.replace(/^\?redirect=[^&]*(&|$)/, '') : 
+      '?' + location.search.replace(/^\?redirect=[^&]*&?/, '')) : 
+    null;
 
   useEffect(() => {
     setFormData({ email: "", nickname: "", password: "", code: "" });
@@ -124,7 +133,6 @@ export const LoginPage = () => {
   }, [isSignUp]);
 
   useEffect(() => {
-    console.log(import.meta.env.VITE_APP_SERVER_URL);
     if (timeLeft > 0) {
       const timer = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
@@ -191,29 +199,39 @@ export const LoginPage = () => {
     try {
       if (isSignUp) {
         await signUp(formData);
-        showError("회원가입 성공! 로그인해주세요", "black");
+        showError("회원가입 성공! 로그인해주세요", "green");
         setIsSignUp(false);
       } else {
         const responseData = await logIn(formData.nickname, formData.password);
-        if (responseData.status == 200) {
+        if (responseData.status === 200) {
           const data = responseData.data;
           const token = typeof data === "string" ? data : data?.accessToken;
-          const server = import.meta.env.REACT_APP_SERVER_URL || "http://127.0.0.1:3000";
+          
+          if (!token) {
+            throw new Error("Authentication token not received");
+          }
+          
+          try {
+            const userResponse = await getUserInfo(token);
+            if (userResponse.status === 200 && userResponse.data) {
+              login(token, userResponse.data);
+            } else {
+              login(token);
+            }
+          } catch (error) {
+            console.error("Failed to fetch user info:", error);
+            login(token);
+          }
 
-          fetch(`${server}${redirectUrl}`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
-            },
-          })
-            .then(response => response.json())
-            .then(data => {
-              window.location.href = data.url;
-            })
-            .catch(error => {
-              console.error(error);
-            });
+          if (fullRedirectUrl) {                    
+            if (fullRedirectUrl.startsWith('/')) {
+              navigate(fullRedirectUrl);
+            } else {
+              window.location.href = fullRedirectUrl;
+            }
+          } else {
+            navigate("/");
+          }
         } else {
           showError("로그인 데이터가 올바르지 않습니다");
         }
@@ -221,6 +239,8 @@ export const LoginPage = () => {
     } catch (err) {
       if (err instanceof Error) {
         showError(err.message);
+      } else {
+        showError("알 수 없는 오류가 발생했습니다");
       }
     } finally {
       setLoading(false);
