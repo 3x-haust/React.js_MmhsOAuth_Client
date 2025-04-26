@@ -1,26 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { AuthModal } from "../features/auth/user";
 import { useAuthStore } from "../features/auth";
-
-export const AuthModalWrapper = () => {
-  const { isLoggedIn, initializeAuth, isAuthModalOpen, setIsAuthModalOpen } = useAuthStore();
-  
-  useEffect(() => {
-    initializeAuth();
-    if (!isLoggedIn) {
-      setIsAuthModalOpen(true);
-    }
-  }, [initializeAuth, isLoggedIn, setIsAuthModalOpen]);
-  
-  return (
-    <AuthModal
-      isOpen={!isLoggedIn && isAuthModalOpen}
-      onClose={() => setIsAuthModalOpen(false)}
-    />
-  );
-};
 
 const HeaderContainer = styled.header`
   background-color: white;
@@ -135,7 +116,7 @@ const MenuItem = styled.div`
   }
 `;
 
-export const Header = () => {
+export const Header: React.FC = () => {
   const { isLoggedIn, user, logout } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
@@ -177,7 +158,7 @@ export const Header = () => {
       </Logo>
       
       <Nav>
-        {/* <NavLink to="/docs">문서</NavLink> */}
+        <NavLink to="/docs">문서</NavLink>
         
         {isLoggedIn && (
           <NavLink to="/oauth/manage">앱 관리</NavLink>

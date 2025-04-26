@@ -1,1 +1,3 @@
-export { AuthModalWrapper, Header } from './ui';
+export { Header } from './Header';
+export { Footer } from './Footer';
+export { AuthModalWrapper } from './AuthComponents';
