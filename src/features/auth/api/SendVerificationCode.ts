@@ -1,7 +1,7 @@
-import { BASE_URL } from ".";
+import { API_URL } from '../../../shared/api/constants';
 
 export const sendVerificationCode = async (email: string): Promise<void> => {
-  const response = await fetch(`${BASE_URL}/auth/send-code`, {
+  const response = await fetch(`${API_URL}/api/v1/auth/send-code`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),

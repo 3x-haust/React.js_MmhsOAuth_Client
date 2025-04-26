@@ -1,4 +1,5 @@
 import { User } from '../hooks';
+import { API_URL } from '../../../shared/api/constants';
 import Cookies from 'js-cookie';
 
 export interface GetUserInfoResponse {
@@ -19,7 +20,7 @@ export const getUserInfo = async (token?: string): Promise<GetUserInfoResponse> 
     }
 
     const response = await fetch(
-      `${import.meta.env.VITE_APP_SERVER_URL}/api/v1/user`,
+      `${API_URL}/api/v1/user`,
       {
         method: 'GET',
         headers: {

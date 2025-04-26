@@ -34,7 +34,6 @@ export const ConsentPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({refreshToken: Cookies.get('refreshToken')}),
       });
 

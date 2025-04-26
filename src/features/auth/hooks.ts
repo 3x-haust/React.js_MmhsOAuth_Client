@@ -11,6 +11,7 @@ export interface User {
   generation?: number;
   admission?: number;
   isGraduated?: boolean;
+  isAdmin: boolean;
 }
 
 interface AuthStore {

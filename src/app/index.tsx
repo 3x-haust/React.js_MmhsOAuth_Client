@@ -9,6 +9,7 @@ import { ManageOAuthAppsPage } from '../pages/oauth/manage'
 import { NewOAuthAppPage } from '../pages/oauth/new'
 import { EditOAuthAppPage } from '../pages/oauth/edit'
 import { DocsPage } from '../pages/docs'
+import { NoticesPage, NoticeDetailPage, CreateNoticePage, EditNoticePage } from '../pages/notices'
 import { useAuthStore } from '../features/auth'
 import { Footer, Header } from '../widgets'
 import { ThemeProvider } from 'styled-components'
@@ -37,6 +38,11 @@ function App() {
           <Route path='/oauth/new' element={<NewOAuthAppPage />} />
           <Route path='/oauth/edit/:id' element={<EditOAuthAppPage />} />
           <Route path='/docs' element={<DocsPage />} />
+          <Route path='/notices' element={<NoticesPage />} />
+          <Route path='/notices/:id' element={<NoticeDetailPage />} />
+          <Route path='/notices/new' element={<CreateNoticePage />} />
+          <Route path='/notices/:id/edit' element={<EditNoticePage />} />
+          
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
         {showHeaderFooter && <Footer />}

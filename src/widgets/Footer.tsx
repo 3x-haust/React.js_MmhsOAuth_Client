@@ -108,58 +108,66 @@ const SocialIcon = styled.a`
 
 export const Footer: React.FC = () => {
   return (
-    <FooterContainer>
-      <FooterContent>
-        <FooterSection>
-          <FooterLogo>미림 OAuth</FooterLogo>
-          <FooterDescription>
-            미림마이스터고 학생 및 교사들을 위한 표준 인증 서비스입니다.
-            안전하고 편리한 사용자 인증 시스템으로 여러분의 서비스를 더욱 발전시켜 보세요.
-          </FooterDescription>
-        </FooterSection>
+    <>
+      <div 
+          style={{ 
+            marginTop: 'clamp(380px, 30vw, 400px)',
+            width: '100%'
+          }}
+        />
+      <FooterContainer>
+        <FooterContent>
+          <FooterSection>
+            <FooterLogo>미림 OAuth</FooterLogo>
+            <FooterDescription>
+              미림마이스터고 학생 및 교사들을 위한 표준 인증 서비스입니다.
+              안전하고 편리한 사용자 인증 시스템으로 여러분의 서비스를 더욱 발전시켜 보세요.
+            </FooterDescription>
+          </FooterSection>
+          
+          <FooterSection>
+            <FooterHeading>바로가기</FooterHeading>
+            <FooterLinks>
+              <FooterLink>
+                <a href="/docs">개발 문서</a>
+              </FooterLink>
+              <FooterLink>
+                <a href="/oauth/manage">앱 관리</a>
+              </FooterLink>
+              <FooterLink>
+                <a href="https://github.com/e-mirim/oauth-full-stack" target="_blank" rel="noopener noreferrer">깃허브</a>
+              </FooterLink>
+            </FooterLinks>
+          </FooterSection>
+          
+          <FooterSection>
+            <FooterHeading>도움말</FooterHeading>
+            <FooterLinks>
+              <FooterLink>
+                <a href="/docs#faq">자주 묻는 질문</a>
+              </FooterLink>
+              <FooterLink>
+                <a href="mailto:mmhs.service@gmail.com">메일 문의하기</a>
+                <a href="https://instagram.com/hyphen_team">인스타 문의하기</a>
+              </FooterLink>
+              <FooterLink>
+                <a href="https://e-mirim.hs.kr" target="_blank" rel="noopener noreferrer">미림마이스터고</a>
+              </FooterLink>
+            </FooterLinks>
+          </FooterSection>
+        </FooterContent>
         
-        <FooterSection>
-          <FooterHeading>바로가기</FooterHeading>
-          <FooterLinks>
-            <FooterLink>
-              <a href="/docs">개발 문서</a>
-            </FooterLink>
-            <FooterLink>
-              <a href="/oauth/manage">앱 관리</a>
-            </FooterLink>
-            <FooterLink>
-              <a href="https://github.com/e-mirim/oauth-full-stack" target="_blank" rel="noopener noreferrer">깃허브</a>
-            </FooterLink>
-          </FooterLinks>
-        </FooterSection>
+        <FooterDivider />
         
-        <FooterSection>
-          <FooterHeading>도움말</FooterHeading>
-          <FooterLinks>
-            <FooterLink>
-              <a href="/docs#faq">자주 묻는 질문</a>
-            </FooterLink>
-            <FooterLink>
-              <a href="mailto:mmhs.service@gmail.com">메일 문의하기</a>
-              <a href="https://instagram.com/hyphen_team">인스타 문의하기</a>
-            </FooterLink>
-            <FooterLink>
-              <a href="https://e-mirim.hs.kr" target="_blank" rel="noopener noreferrer">미림마이스터고</a>
-            </FooterLink>
-          </FooterLinks>
-        </FooterSection>
-      </FooterContent>
-      
-      <FooterDivider />
-      
-      <FooterBottom>
-        <Copyright>© {new Date().getFullYear()} 미림마이스터고 OAuth 서비스. All rights reserved.</Copyright>
-        <SocialLinks>
-          <SocialIcon href="https://github.com/3x-haust/" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-            <i className="ri-github-fill"></i> GitHub
-          </SocialIcon>
-        </SocialLinks>
-      </FooterBottom>
-    </FooterContainer>
+        <FooterBottom>
+          <Copyright>© {new Date().getFullYear()} 미림마이스터고 OAuth 서비스. All rights reserved.</Copyright>
+          <SocialLinks>
+            <SocialIcon href="https://github.com/3x-haust/" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+              <i className="ri-github-fill"></i> GitHub
+            </SocialIcon>
+          </SocialLinks>
+        </FooterBottom>
+      </FooterContainer>
+    </>
   );
 };
