@@ -34,14 +34,14 @@ export const ConsentPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({refreshToken: Cookies.get('refreshToken')}),
       });
 
       const data = await response.json();
 
       if (data.status === 200 && data.data?.accessToken) {
-        Cookies.set('accessToken', data.data.accessToken, { secure: true, sameSite: 'Strict' });
-        login(data.data.accessToken);
+        login(data.data.accessToken, data.data.refreshToken);
         return data.data.accessToken;
       } else {
         throw new Error(data.message || 'Failed to refresh token');

@@ -75,6 +75,7 @@ export const NoticeService = {
       
       const response = await fetch(`${API_URL}/api/v1/notice/${id}`, {
         method: 'GET',
+        credentials: 'include',
         headers,
       });
       
@@ -133,6 +134,7 @@ export const NoticeService = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(notice),
       });
       

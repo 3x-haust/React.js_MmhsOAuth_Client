@@ -135,7 +135,6 @@ export const NoticeForm: React.FC<NoticeFormProps> = ({ initialData, onSubmit, i
       content
     };
     
-    // If we're editing an existing notice, include the isActive property
     if (initialData) {
       (formData as UpdateNoticeRequest).isActive = isActive;
     }

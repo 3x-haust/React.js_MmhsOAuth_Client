@@ -160,6 +160,10 @@ export const Header: React.FC = () => {
       <Nav>
         <NavLink to="/docs">문서</NavLink>
         <NavLink to="/notices">공지사항</NavLink>
+
+        {user?.isAdmin && (
+          <NavLink to="/admin">관리자</NavLink>
+        )}
         
         {isLoggedIn && (
           <NavLink to="/oauth/manage">앱 관리</NavLink>

@@ -205,22 +205,23 @@ export const LoginPage = () => {
         const responseData = await logIn(formData.nickname, formData.password);
         if (responseData.status === 200) {
           const data = responseData.data;
-          const token = typeof data === "string" ? data : data?.accessToken;
+          const accessToken = typeof data === "string" ? data : data?.accessToken;
+          const refreshToken = typeof data === "string" ? data : data?.refreshToken;
           
-          if (!token) {
+          if (!accessToken || !refreshToken) {
             throw new Error("Authentication token not received");
           }
           
           try {
-            const userResponse = await getUserInfo(token);
+            const userResponse = await getUserInfo(accessToken);
             if (userResponse.status === 200 && userResponse.data) {
-              login(token, userResponse.data);
+              login(accessToken, refreshToken, userResponse.data);
             } else {
-              login(token);
+              login(accessToken, refreshToken);
             }
           } catch (error) {
             console.error("Failed to fetch user info:", error);
-            login(token);
+            login(accessToken, refreshToken);
           }
 
           if (fullRedirectUrl) {

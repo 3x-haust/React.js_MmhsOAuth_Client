@@ -57,14 +57,12 @@ export const EditNoticePage: React.FC = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   
-  // Check if user is admin
   useEffect(() => {
     if (!user || !user.isAdmin) {
       navigate('/notices', { replace: true });
     }
   }, [user, navigate]);
   
-  // Fetch the notice data
   useEffect(() => {
     const fetchNotice = async () => {
       if (!id) return;

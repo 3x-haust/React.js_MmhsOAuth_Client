@@ -160,9 +160,9 @@ export const Footer: React.FC = () => {
         <FooterDivider />
         
         <FooterBottom>
-          <Copyright>© {new Date().getFullYear()} 미림마이스터고 OAuth 서비스. All rights reserved.</Copyright>
+          <Copyright>© {new Date().getFullYear()} 미림마이스터고 OAuth 서비스. | Hyphen All rights reserved.</Copyright>
           <SocialLinks>
-            <SocialIcon href="https://github.com/3x-haust/" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <SocialIcon href="https://github.com/3x-haust/React.js_MmhsOAuth_Client" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
               <i className="ri-github-fill"></i> GitHub
             </SocialIcon>
           </SocialLinks>

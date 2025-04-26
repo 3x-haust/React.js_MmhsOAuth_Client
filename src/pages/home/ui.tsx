@@ -160,7 +160,7 @@ export const HomePage = () => {
       try {
         setLoading(true);
         const notices = await NoticeService.getNotices(false);
-        setRecentNotices(notices.slice(0, 3)); // Get the latest 3 notices
+        setRecentNotices(notices.slice(0, 3));
       } catch (error) {
         console.error('Failed to fetch recent notices:', error);
       } finally {

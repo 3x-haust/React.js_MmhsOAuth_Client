@@ -208,7 +208,7 @@ export const AuthModal = ({ isOpen, onClose }: {
         const responseData = await logIn(formData.nickname, formData.password);
         if (responseData.status == 200) {
           if (typeof responseData.data === 'object') {
-            login(responseData.data.accessToken);
+            login(responseData.data.accessToken, responseData.data.refreshToken);
             
             try {
               const userInfoResponse = await getUserInfo(responseData.data.accessToken);

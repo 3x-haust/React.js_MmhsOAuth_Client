@@ -17,7 +17,7 @@ export interface User {
 interface AuthStore {
   isLoggedIn: boolean;
   user: User | null;
-  login: (accessToken: string, userData?: User) => void;
+  login: (accessToken: string, refreshToken: string, userData?: User) => void;
   setUser: (userData: User) => void;
   logout: () => void;
   initializeAuth: () => Promise<void>;
@@ -34,8 +34,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ isAuthModalOpen });
   },
 
-  login: (accessToken: string, userData?: User) => {
+  login: (accessToken: string, refreshToken: string,  userData?: User) => {
     Cookies.set('accessToken', accessToken, { secure: true, sameSite: 'Strict' });
+    Cookies.set('refreshToken', refreshToken, { secure: true, sameSite: 'Strict' });
     if (userData) {
       localStorage.setItem('userData', JSON.stringify(userData));
       set({ isLoggedIn: true, user: userData });
