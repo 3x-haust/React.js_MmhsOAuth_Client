@@ -8,8 +8,9 @@ import { ConsentPage } from '../pages/oauth/consent'
 import { ManageOAuthAppsPage } from '../pages/oauth/manage'
 import { NewOAuthAppPage } from '../pages/oauth/new'
 import { EditOAuthAppPage } from '../pages/oauth/edit'
+import { DocsPage } from '../pages/docs'
 import { useAuthStore } from '../features/auth'
-import { Header } from '../widgets/index'
+import { Footer, Header } from '../widgets'
 import { ThemeProvider } from 'styled-components'
 import { theme } from './styles'
 
@@ -21,12 +22,12 @@ function App() {
     initializeAuth()
   }, [initializeAuth])
 
-  const showHeader = location.pathname !== '/login'
+  const showHeaderFooter = location.pathname !== '/login'
 
   return (
     <>
      <ThemeProvider theme={theme}>
-        {showHeader && <Header />}
+        {showHeaderFooter && <Header />}
         <Routes>
           <Route path='/login' element={<LoginPage />} />
           <Route path='/' element={<HomePage />} />
@@ -35,8 +36,10 @@ function App() {
           <Route path='/oauth/manage' element={<ManageOAuthAppsPage />} />
           <Route path='/oauth/new' element={<NewOAuthAppPage />} />
           <Route path='/oauth/edit/:id' element={<EditOAuthAppPage />} />
+          <Route path='/docs' element={<DocsPage />} />
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
+        {showHeaderFooter && <Footer />}
      </ThemeProvider>
     </>
   )
