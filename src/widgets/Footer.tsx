@@ -148,6 +148,8 @@ export const Footer: React.FC = () => {
               </FooterLink>
               <FooterLink>
                 <a href="mailto:mmhs.service@gmail.com">메일 문의하기</a>
+              </FooterLink>
+              <FooterLink>
                 <a href="https://instagram.com/hyphen_team">인스타 문의하기</a>
               </FooterLink>
               <FooterLink>
@@ -160,7 +162,7 @@ export const Footer: React.FC = () => {
         <FooterDivider />
         
         <FooterBottom>
-          <Copyright>© {new Date().getFullYear()} 미림마이스터고 OAuth 서비스. | Hyphen All rights reserved.</Copyright>
+          <Copyright>© 2025 Hyphen | 미림마이스터고 OAuth 서비스. All rights reserved.</Copyright>
           <SocialLinks>
             <SocialIcon href="https://github.com/3x-haust/React.js_MmhsOAuth_Client" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
               <i className="ri-github-fill"></i> GitHub
