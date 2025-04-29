@@ -691,7 +691,6 @@ module.exports = router;`}
         <SubTitle>Q: 토큰은 얼마나 오래 유효한가요?</SubTitle>
         <Paragraph>
           액세스 토큰은 일반적으로 15분 동안 유효하며, 리프레시 토큰은 30일 동안 유효합니다. 
-          정확한 만료 시간은 응답의 <InlineCode>expires_in</InlineCode> 필드에서 확인할 수 있습니다.
         </Paragraph>
 
         <SubTitle>Q: 사용자가 권한을 취소할 수 있나요?</SubTitle>

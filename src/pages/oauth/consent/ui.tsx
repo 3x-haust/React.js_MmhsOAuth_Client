@@ -129,7 +129,7 @@ export const ConsentPage = () => {
           navigate(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
           setLoading(false);
         }
-      } else {
+      } else {        
         setError(data.message || "권한 부여 요청 처리 중 오류가 발생했습니다.");
         setLoading(false);
       }

@@ -127,8 +127,6 @@ export const NewOAuthAppPage = () => {
       );
       
       const data = await response.json();
-
-      console.log("Response data:", data);
       
       if (data.status === 201) {
         navigate("/oauth/manage");

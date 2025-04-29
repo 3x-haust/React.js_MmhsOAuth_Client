@@ -41,7 +41,7 @@ export const ManageOAuthAppsPage = () => {
 
       if (data.status === 200 && data.data?.accessToken) {
         Cookies.set('accessToken', data.data.accessToken, { secure: true, sameSite: 'Strict' });
-        login(data.data.accessToken);
+        login(data.data.accessToken, data.data.refreshToken);
         return data.data.accessToken;
       } else {
         throw new Error(data.message || 'Failed to refresh token');

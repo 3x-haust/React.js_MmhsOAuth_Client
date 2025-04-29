@@ -23,6 +23,7 @@ interface AuthStore {
   initializeAuth: () => Promise<void>;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (isAuthModalOpen: boolean) => void;
+  refreshUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -34,7 +35,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ isAuthModalOpen });
   },
 
-  login: (accessToken: string, refreshToken: string,  userData?: User) => {
+  login: (accessToken: string, refreshToken: string, userData?: User) => {
     Cookies.set('accessToken', accessToken, { secure: true, sameSite: 'Strict' });
     Cookies.set('refreshToken', refreshToken, { secure: true, sameSite: 'Strict' });
     if (userData) {
@@ -55,6 +56,19 @@ export const useAuthStore = create<AuthStore>((set) => ({
     localStorage.removeItem('userData');
     logOut();
     set({ isLoggedIn: false, user: null });
+  },
+
+  refreshUser: async () => {
+    try {
+      const userResponse = await getUserInfo();
+      if (userResponse.status === 200 && userResponse.data) {
+        localStorage.setItem('userData', JSON.stringify(userResponse.data));
+        set({ user: userResponse.data });
+      }
+      return;
+    } catch (error) {
+      console.error('Failed to refresh user info:', error);
+    }
   },
 
   initializeAuth: async () => {

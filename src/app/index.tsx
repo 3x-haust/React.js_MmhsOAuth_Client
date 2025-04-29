@@ -11,6 +11,7 @@ import { EditOAuthAppPage } from '../pages/oauth/edit'
 import { DocsPage } from '../pages/docs'
 import { NoticesPage, NoticeDetailPage, CreateNoticePage, EditNoticePage } from '../pages/notices'
 import { AdminDashboardPage, UserManagementPage, UserEditPage } from '../pages/admin'
+import { ProfilePage } from '../pages/profile'
 import { useAuthStore } from '../features/auth'
 import { Footer, Header } from '../widgets'
 import { ThemeProvider } from 'styled-components'
@@ -24,7 +25,8 @@ const getPageName = (path: string): string => {
     '/notices': '공지사항',
     '/oauth/manage': 'OAuth 앱 관리',
     '/admin': '관리자 대시보드',
-    '/admin/users': '사용자 관리'
+    '/admin/users': '사용자 관리',
+    '/profile': '마이페이지'
   };
 
   for (const [key, value] of Object.entries(pathMap)) {
@@ -102,6 +104,7 @@ function App() {
           <Route path='/admin' element={<AdminDashboardPage />} />
           <Route path='/admin/users' element={<UserManagementPage />} />
           <Route path='/admin/users/:id/edit' element={<UserEditPage />} />
+          <Route path='/profile' element={<ProfilePage />} />
           
           <Route path='*' element={<NotFoundPage />} />
         </Routes>

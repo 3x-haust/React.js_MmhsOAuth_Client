@@ -185,6 +185,13 @@ export const Header: React.FC = () => {
               
               <MenuItem onClick={() => {
                 setDropdownOpen(false);
+                navigate('/profile');
+              }}>
+                마이페이지
+              </MenuItem>
+
+              <MenuItem onClick={() => {
+                setDropdownOpen(false);
                 navigate('/oauth/manage');
               }}>
                 OAuth 앱 관리

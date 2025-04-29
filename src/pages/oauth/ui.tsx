@@ -22,7 +22,6 @@ export const OAuthCallback = () => {
         })
             .then((res) => res.json())
             .then((data) => {
-                console.log("OAuth token response:", data);
                 if (data.access_token) {
                     localStorage.setItem("access_token", data.access_token);
                     navigate("/dashboard"); 
