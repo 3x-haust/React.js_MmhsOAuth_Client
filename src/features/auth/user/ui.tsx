@@ -211,14 +211,6 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
           nickname: true,
           password: true,
           code: true,
-          newPassword: true,
-        };
-      case modes.RESET_PASSWORD:
-        return {
-          email: formData.email.trim() !== '' && isValidEmail(formData.email),
-          nickname: true,
-          password: true,
-          code: !!formData.code.trim(),
           newPassword: formData.newPassword.trim().length >= 8,
         };
       default:
@@ -253,7 +245,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       setLoading(true);
       if (mode === modes.SIGNUP) {
         await sendVerificationCode(formData.email);
-      } else if (mode === modes.RESET_PASSWORD || mode === modes.REQUEST_PASSWORD_RESET) {
+      } else if (mode === modes.REQUEST_PASSWORD_RESET) {
         await requestPasswordReset(formData.email);
       }
       setTimeLeft(300);
@@ -275,7 +267,12 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     try {
       switch (mode) {
         case modes.SIGNUP:
-          await signUp(formData);
+          await signUp({
+            email: formData.email,
+            nickname: formData.nickname,
+            password: formData.password,
+            code: formData.code,
+          });
           showError('회원가입 성공! 로그인해주세요', 'black');
           setMode(modes.LOGIN);
           break;
