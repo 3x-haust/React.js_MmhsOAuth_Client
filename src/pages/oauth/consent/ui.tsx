@@ -4,7 +4,14 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { useAuthStore } from '@/features/auth';
-import { getClientInfo, submitConsent, refreshToken, ClientInfo } from '@/features/oauth';
+import {
+  getClientInfo,
+  submitConsent,
+  refreshToken,
+  ClientInfo,
+  checkApplicationStatus,
+  approveConsent,
+} from '@/features/oauth';
 
 export const ConsentPage = () => {
   const [searchParams] = useSearchParams();
@@ -40,9 +47,23 @@ export const ConsentPage = () => {
         if (!clientId) return;
 
         const data = await getClientInfo(clientId);
+        const status = await checkApplicationStatus(clientId);
 
         if (data.status === 200) {
           setClientInfo(data.data);
+
+          if (status.data.status === 'active') {
+            const url = await approveConsent({
+              client_id: clientId,
+              redirect_uri: redirectUri,
+              state: state,
+              approved: true,
+              scope: scope,
+            });
+
+            window.location.href = url.data.url;
+            return;
+          }
         } else if (data.status === 401 && data.message === 'TOKEN_EXPIRED') {
           try {
             const refreshData = await refreshToken();

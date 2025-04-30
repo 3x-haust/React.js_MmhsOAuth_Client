@@ -86,19 +86,31 @@ export const submitConsent = async (consentData: ConsentRequestPayload) => {
   return await res.json();
 };
 
-export const getOAuthApps = async () => {
-  const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client`, {
+export const approveConsent = async (consentData: ConsentRequestPayload) => {
+  const res = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth/consent/approve`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${Cookies.get('accessToken')}`,
+    },
+    body: JSON.stringify(consentData),
+  });
+
+  return await res.json();
+};
+
+export const getOAuthApp = async (id: string) => {
+  const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${id}`, {
     headers: {
       Authorization: `Bearer ${Cookies.get('accessToken')}`,
-      credentials: 'include',
     },
   });
 
   return await response.json();
 };
 
-export const getOAuthApp = async (id: string) => {
-  const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${id}`, {
+export const getOAuthApps = async () => {
+  const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client`, {
     headers: {
       Authorization: `Bearer ${Cookies.get('accessToken')}`,
     },
@@ -141,6 +153,18 @@ export const deleteOAuthApp = async (id: number) => {
     },
   });
 
+  return await response.json();
+};
+
+export const checkApplicationStatus = async (clientId: string) => {
+  const response = await fetch(
+    `${import.meta.env.VITE_APP_SERVER_URL}/api/v1/user/applications/${clientId}/status`,
+    {
+      headers: {
+        Authorization: `Bearer ${Cookies.get('accessToken')}`,
+      },
+    }
+  );
   return await response.json();
 };
 
