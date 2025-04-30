@@ -141,7 +141,9 @@ export const EditOAuthAppPage = () => {
     const urlRegex = /^https?:\/\/.+/;
     const customUrlRegex = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[a-zA-Z0-9].*$/;
     if (formData.redirectUris.some(uri => !urlRegex.test(uri) && !customUrlRegex.test(uri))) {
-      setError('모든 리다이렉션 URL은 http:// 또는 https://로 시작해야 합니다.');
+      setError(
+        '모든 리다이렉션 URL은 http:// 또는 https://로 시작하거나 test://callback 형식이어야 합니다.'
+      );
       return false;
     }
 
