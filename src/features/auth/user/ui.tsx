@@ -1,18 +1,20 @@
 import { useState, useEffect, useMemo } from 'react';
-import { styled } from "styled-components";
-import { theme } from "@/app/styles";
-import { useAuthStore } from '@/features/auth/hooks';
-import { 
-  logIn, 
-  sendVerificationCode, 
-  signUp, 
+import { styled } from 'styled-components';
+
+import {
+  logIn,
+  sendVerificationCode,
+  signUp,
   getUserInfo,
   requestPasswordReset,
-  findNickname
+  findNickname,
 } from '../api';
 
+import { theme } from '@/app/styles';
+import { useAuthStore } from '@/features/auth/hooks';
+
 const ModalOverlay = styled.div<{ $isOpen: boolean }>`
-  display: ${props => props.$isOpen ? 'flex' : 'none'};
+  display: ${props => (props.$isOpen ? 'flex' : 'none')};
   position: fixed;
   top: 0;
   left: 0;
@@ -56,11 +58,11 @@ const Input = styled.input`
 
 const Button = styled.button<{ $disabled?: boolean }>`
   padding: 0.8rem;
-  background-color: ${props => props.$disabled ? '#ccc' : theme.primary};
+  background-color: ${props => (props.$disabled ? '#ccc' : theme.primary)};
   color: white;
   border: none;
   border-radius: 4px;
-  cursor: ${props => props.$disabled ? 'not-allowed' : 'pointer'};
+  cursor: ${props => (props.$disabled ? 'not-allowed' : 'pointer')};
   transition: background-color 0.2s;
 `;
 
@@ -92,7 +94,7 @@ const ErrorModal = styled.div`
 `;
 
 const ValidationMessage = styled.small<{ $valid: boolean }>`
-  color: ${props => props.$valid ? theme.primary : 'red'};
+  color: ${props => (props.$valid ? theme.primary : 'red')};
   margin-top: -0.5rem;
   text-align: left;
 `;
@@ -120,19 +122,16 @@ const modes = {
   SIGNUP: 'signup',
   FIND_NICKNAME: 'find-nickname',
   REQUEST_PASSWORD_RESET: 'request-password-reset',
-  RESET_PASSWORD: 'reset-password'
+  RESET_PASSWORD: 'reset-password',
 };
 
-export const AuthModal = ({ isOpen, onClose }: { 
-  isOpen: boolean; 
-  onClose: () => void 
-}) => {
+export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [formData, setFormData] = useState({
     email: '',
     nickname: '',
     password: '',
     code: '',
-    newPassword: ''
+    newPassword: '',
   });
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -145,7 +144,7 @@ export const AuthModal = ({ isOpen, onClose }: {
     nickname: false,
     password: false,
     code: false,
-    newPassword: false
+    newPassword: false,
   });
 
   const { login, setUser } = useAuthStore();
@@ -161,7 +160,7 @@ export const AuthModal = ({ isOpen, onClose }: {
         nickname: false,
         password: false,
         code: false,
-        newPassword: false
+        newPassword: false,
       });
     }
   }, [isOpen]);
@@ -179,16 +178,16 @@ export const AuthModal = ({ isOpen, onClose }: {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   };
-  
+
   const isFormValid = useMemo(() => {
-    switch(mode) {
+    switch (mode) {
       case modes.LOGIN:
         return {
           email: true,
           nickname: !!formData.nickname.trim(),
           password: !!formData.password.trim(),
           code: true,
-          newPassword: true
+          newPassword: true,
         };
       case modes.SIGNUP:
         return {
@@ -196,7 +195,7 @@ export const AuthModal = ({ isOpen, onClose }: {
           nickname: !!formData.nickname.trim(),
           password: formData.password.trim().length >= 8,
           code: !!formData.code.trim(),
-          newPassword: true
+          newPassword: true,
         };
       case modes.FIND_NICKNAME:
         return {
@@ -204,7 +203,7 @@ export const AuthModal = ({ isOpen, onClose }: {
           nickname: true,
           password: true,
           code: true,
-          newPassword: true
+          newPassword: true,
         };
       case modes.REQUEST_PASSWORD_RESET:
         return {
@@ -212,7 +211,7 @@ export const AuthModal = ({ isOpen, onClose }: {
           nickname: true,
           password: true,
           code: true,
-          newPassword: true
+          newPassword: true,
         };
       case modes.RESET_PASSWORD:
         return {
@@ -220,7 +219,7 @@ export const AuthModal = ({ isOpen, onClose }: {
           nickname: true,
           password: true,
           code: !!formData.code.trim(),
-          newPassword: formData.newPassword.trim().length >= 8
+          newPassword: formData.newPassword.trim().length >= 8,
         };
       default:
         return {
@@ -228,7 +227,7 @@ export const AuthModal = ({ isOpen, onClose }: {
           nickname: false,
           password: false,
           code: false,
-          newPassword: false
+          newPassword: false,
         };
     }
   }, [formData, mode]);
@@ -249,7 +248,7 @@ export const AuthModal = ({ isOpen, onClose }: {
       showError('이메일을 입력해주세요');
       return;
     }
-    
+
     try {
       setLoading(true);
       if (mode === modes.SIGNUP) {
@@ -271,7 +270,7 @@ export const AuthModal = ({ isOpen, onClose }: {
       showError('모든 필드를 올바르게 입력해주세요');
       return;
     }
-  
+
     setLoading(true);
     try {
       switch (mode) {
@@ -281,12 +280,12 @@ export const AuthModal = ({ isOpen, onClose }: {
           setMode(modes.LOGIN);
           break;
 
-        case modes.LOGIN: { 
+        case modes.LOGIN: {
           const responseData = await logIn(formData.nickname, formData.password);
           if (responseData.status === 200) {
             if (typeof responseData.data === 'object') {
               login(responseData.data.accessToken, responseData.data.refreshToken);
-              
+
               try {
                 const userInfoResponse = await getUserInfo(responseData.data.accessToken);
                 if (userInfoResponse.status === 200 && userInfoResponse.data) {
@@ -302,7 +301,7 @@ export const AuthModal = ({ isOpen, onClose }: {
             showError('로그인 실패');
           }
           onClose();
-          break; 
+          break;
         }
 
         case modes.FIND_NICKNAME:
@@ -327,25 +326,30 @@ export const AuthModal = ({ isOpen, onClose }: {
   };
 
   const getModalTitle = () => {
-    switch(mode) {
-      case modes.LOGIN: return '로그인';
-      case modes.SIGNUP: return '회원가입';
-      case modes.FIND_NICKNAME: return '닉네임 찾기';
-      case modes.REQUEST_PASSWORD_RESET: return '비밀번호 찾기';
-      default: return '';
+    switch (mode) {
+      case modes.LOGIN:
+        return '로그인';
+      case modes.SIGNUP:
+        return '회원가입';
+      case modes.FIND_NICKNAME:
+        return '닉네임 찾기';
+      case modes.REQUEST_PASSWORD_RESET:
+        return '비밀번호 찾기';
+      default:
+        return '';
     }
   };
 
   const renderForm = () => {
-    switch(mode) {
+    switch (mode) {
       case modes.LOGIN:
         return (
           <>
             <Input
-              type="text"
-              placeholder="닉네임"
+              type='text'
+              placeholder='닉네임'
               value={formData.nickname}
-              onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
+              onChange={e => setFormData({ ...formData, nickname: e.target.value })}
               style={{ borderColor: fieldValidity.nickname ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.nickname}>
@@ -353,10 +357,10 @@ export const AuthModal = ({ isOpen, onClose }: {
             </ValidationMessage>
 
             <Input
-              type="password"
-              placeholder="비밀번호"
+              type='password'
+              placeholder='비밀번호'
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={e => setFormData({ ...formData, password: e.target.value })}
               style={{ borderColor: fieldValidity.password ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.password}>
@@ -364,30 +368,30 @@ export const AuthModal = ({ isOpen, onClose }: {
             </ValidationMessage>
           </>
         );
-        
+
       case modes.SIGNUP:
         return (
           <>
             <Input
-              type="email"
-              placeholder="이메일"
+              type='email'
+              placeholder='이메일'
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
               style={{ borderColor: fieldValidity.email ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.email}>
-              {formData.email.trim() === '' 
+              {formData.email.trim() === ''
                 ? '이메일을 입력해주세요'
-                : (fieldValidity.email 
-                  ? '' 
-                  : '유효한 이메일을 입력해주세요')}
+                : fieldValidity.email
+                  ? ''
+                  : '유효한 이메일을 입력해주세요'}
             </ValidationMessage>
 
             <Input
-              type="text"
-              placeholder="닉네임"
+              type='text'
+              placeholder='닉네임'
               value={formData.nickname}
-              onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
+              onChange={e => setFormData({ ...formData, nickname: e.target.value })}
               style={{ borderColor: fieldValidity.nickname ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.nickname}>
@@ -395,26 +399,26 @@ export const AuthModal = ({ isOpen, onClose }: {
             </ValidationMessage>
 
             <Input
-              type="password"
-              placeholder="비밀번호"
+              type='password'
+              placeholder='비밀번호'
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={e => setFormData({ ...formData, password: e.target.value })}
               style={{ borderColor: fieldValidity.password ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.password}>
-            {formData.password.trim() === '' 
+              {formData.password.trim() === ''
                 ? '비밀번호를 입력해주세요'
-                : (fieldValidity.password 
-                  ? '' 
-                  : '8자리 이상의 비밀번호를 입력해주세요')}
+                : fieldValidity.password
+                  ? ''
+                  : '8자리 이상의 비밀번호를 입력해주세요'}
             </ValidationMessage>
 
             <div style={{ position: 'relative' }}>
               <Input
-                type="number"
-                placeholder="인증코드"
+                type='number'
+                placeholder='인증코드'
                 value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                onChange={e => setFormData({ ...formData, code: e.target.value })}
                 style={{ borderColor: fieldValidity.code ? '#ddd' : 'red', paddingRight: '70px' }}
               />
               {timeLeft > 0 && (
@@ -427,11 +431,7 @@ export const AuthModal = ({ isOpen, onClose }: {
               {fieldValidity.code ? '' : '인증코드를 입력해주세요'}
             </ValidationMessage>
 
-            <Button
-              type="button"
-              onClick={handleSendCode}
-              $disabled={timeLeft > 0 || loading}
-            >
+            <Button type='button' onClick={handleSendCode} $disabled={timeLeft > 0 || loading}>
               {timeLeft > 0 ? '인증코드 재전송' : '인증코드 전송'}
             </Button>
           </>
@@ -441,20 +441,20 @@ export const AuthModal = ({ isOpen, onClose }: {
         return (
           <>
             <Input
-              type="email"
-              placeholder="이메일"
+              type='email'
+              placeholder='이메일'
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
               style={{ borderColor: fieldValidity.email ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.email}>
-              {formData.email.trim() === '' 
+              {formData.email.trim() === ''
                 ? '이메일을 입력해주세요'
-                : (fieldValidity.email 
-                  ? '' 
-                  : '유효한 이메일을 입력해주세요')}
+                : fieldValidity.email
+                  ? ''
+                  : '유효한 이메일을 입력해주세요'}
             </ValidationMessage>
-            
+
             <p style={{ fontSize: '0.9rem', color: '#666' }}>
               가입 시 사용한 이메일 주소를 입력하시면, 해당 이메일로 닉네임을 보내드립니다.
             </p>
@@ -465,20 +465,20 @@ export const AuthModal = ({ isOpen, onClose }: {
         return (
           <>
             <Input
-              type="email"
-              placeholder="이메일"
+              type='email'
+              placeholder='이메일'
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
               style={{ borderColor: fieldValidity.email ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.email}>
-              {formData.email.trim() === '' 
+              {formData.email.trim() === ''
                 ? '이메일을 입력해주세요'
-                : (fieldValidity.email 
-                  ? '' 
-                  : '유효한 이메일을 입력해주세요')}
+                : fieldValidity.email
+                  ? ''
+                  : '유효한 이메일을 입력해주세요'}
             </ValidationMessage>
-            
+
             <p style={{ fontSize: '0.9rem', color: '#666' }}>
               가입 시 사용한 이메일 주소를 입력하시면, 비밀번호 재설정 코드를 보내드립니다.
             </p>
@@ -493,23 +493,23 @@ export const AuthModal = ({ isOpen, onClose }: {
     if (mode === modes.LOGIN) {
       return (
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-          <Button 
-            type="button" 
+          <Button
+            type='button'
             onClick={() => setMode(modes.SIGNUP)}
             $disabled={loading}
             style={{ background: 'none', color: theme.primary }}
           >
             회원가입
           </Button>
-          <Button 
-            type="button" 
+          <Button
+            type='button'
             onClick={() => setMode(modes.FIND_NICKNAME)}
             style={{ background: 'none', color: theme.primary }}
           >
             닉네임 찾기
           </Button>
-          <Button 
-            type="button" 
+          <Button
+            type='button'
             onClick={() => setMode(modes.REQUEST_PASSWORD_RESET)}
             style={{ background: 'none', color: theme.primary }}
           >
@@ -518,42 +518,30 @@ export const AuthModal = ({ isOpen, onClose }: {
         </div>
       );
     } else {
-      return (
-        <BackButton onClick={() => setMode(modes.LOGIN)}>
-          로그인 화면으로 돌아가기
-        </BackButton>
-      );
+      return <BackButton onClick={() => setMode(modes.LOGIN)}>로그인 화면으로 돌아가기</BackButton>;
     }
   };
 
   return (
     <ModalOverlay $isOpen={isOpen} onClick={onClose}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
+      <ModalContent onClick={e => e.stopPropagation()}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
         <h2>{getModalTitle()}</h2>
 
         <Form onSubmit={handleSubmit}>
           {renderForm()}
 
-          <Button 
-            type="submit" 
-            $disabled={!Object.values(isFormValid).every(Boolean) || loading}
-          >
+          <Button type='submit' $disabled={!Object.values(isFormValid).every(Boolean) || loading}>
             {loading ? '처리 중...' : getModalTitle()}
           </Button>
         </Form>
 
-        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-          {renderFooter()}
-        </div>
+        <div style={{ marginTop: '1rem', textAlign: 'center' }}>{renderFooter()}</div>
 
         {showErrorModal && (
           <ErrorModal>
             <p style={{ color: errorColor }}>{error}</p>
-            <Button
-              onClick={() => setShowErrorModal(false)}
-              style={{ marginTop: '1rem' }}
-            >
+            <Button onClick={() => setShowErrorModal(false)} style={{ marginTop: '1rem' }}>
               확인
             </Button>
           </ErrorModal>

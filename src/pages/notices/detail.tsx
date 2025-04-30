@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Notice, NoticeService } from '@/features/notice/api/noticeService';
+
 import { useAuthStore } from '@/features/auth';
+import { Notice, NoticeService } from '@/features/notice/api/noticeService';
 
 const DetailContainer = styled.div`
   max-width: 900px;
@@ -62,7 +63,7 @@ const BackButton = styled(Link)`
   border-radius: 4px;
   font-weight: 500;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: ${({ theme }) => theme.colors?.border || '#eee'};
   }
@@ -78,7 +79,7 @@ const EditButton = styled(Link)`
   border-radius: 4px;
   font-weight: 500;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: ${({ theme }) => theme.colors?.primaryDark || '#4B6ED3'};
   }
@@ -88,7 +89,7 @@ const DeleteButton = styled(Button)`
   background-color: ${({ theme }) => theme.colors?.error || '#e74c3c'};
   color: white;
   border: none;
-  
+
   &:hover {
     background-color: #c0392b;
   }
@@ -99,7 +100,7 @@ const LoadingSpinner = styled.div`
   justify-content: center;
   align-items: center;
   min-height: 300px;
-  
+
   &:after {
     content: '';
     width: 40px;
@@ -109,10 +110,14 @@ const LoadingSpinner = styled.div`
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
-  
+
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;
 
@@ -144,13 +149,13 @@ export const NoticeDetailPage: React.FC = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  
+
   const isAdmin = user?.isAdmin === true;
-  
+
   useEffect(() => {
     const fetchNotice = async () => {
       if (!id) return;
-      
+
       try {
         setLoading(true);
         const data = await NoticeService.getNoticeById(parseInt(id, 10));
@@ -162,15 +167,15 @@ export const NoticeDetailPage: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchNotice();
   }, [id]);
-  
+
   const handleDelete = async () => {
     if (!id || !window.confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
       return;
     }
-    
+
     try {
       setDeleteLoading(true);
       await NoticeService.deleteNotice(parseInt(id, 10));
@@ -181,7 +186,7 @@ export const NoticeDetailPage: React.FC = () => {
       setDeleteLoading(false);
     }
   };
-  
+
   if (loading) {
     return (
       <>
@@ -191,22 +196,20 @@ export const NoticeDetailPage: React.FC = () => {
       </>
     );
   }
-  
+
   if (!notice) {
     return (
       <>
         <DetailContainer>
-          <ErrorMessage>
-            공지사항을 찾을 수 없거나 존재하지 않는 공지사항입니다.
-          </ErrorMessage>
+          <ErrorMessage>공지사항을 찾을 수 없거나 존재하지 않는 공지사항입니다.</ErrorMessage>
           <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-            <BackButton to="/notices">공지사항 목록으로</BackButton>
+            <BackButton to='/notices'>공지사항 목록으로</BackButton>
           </div>
         </DetailContainer>
       </>
     );
   }
-  
+
   return (
     <>
       <DetailContainer>
@@ -219,16 +222,14 @@ export const NoticeDetailPage: React.FC = () => {
             </AuthorDate>
           </NoticeInfo>
         </NoticeHeader>
-        
+
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        
-        <NoticeContent>
-          {notice.content}
-        </NoticeContent>
-        
+
+        <NoticeContent>{notice.content}</NoticeContent>
+
         <ActionButtons>
-          <BackButton to="/notices">목록으로 돌아가기</BackButton>
-          
+          <BackButton to='/notices'>목록으로 돌아가기</BackButton>
+
           {isAdmin && (
             <div>
               <EditButton to={`/notices/${notice.id}/edit`} style={{ marginRight: '1rem' }}>

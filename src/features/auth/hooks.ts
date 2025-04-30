@@ -1,5 +1,6 @@
-import { create } from 'zustand';
 import Cookies from 'js-cookie';
+import { create } from 'zustand';
+
 import { logOut, getUserInfo } from '@/features/auth/api';
 
 export interface User {
@@ -26,7 +27,7 @@ interface AuthStore {
   refreshUser: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>(set => ({
   isLoggedIn: false,
   user: null,
   isAuthModalOpen: false,
@@ -73,10 +74,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   initializeAuth: async () => {
     const accessToken = Cookies.get('accessToken');
-    
+
     if (accessToken) {
       set({ isLoggedIn: true });
-      
+
       try {
         const userDataStr = localStorage.getItem('userData');
         if (userDataStr) {
@@ -87,7 +88,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
             console.error('Failed to parse user data from localStorage');
           }
         }
-        
+
         const userResponse = await getUserInfo();
         if (userResponse.status === 200 && userResponse.data) {
           localStorage.setItem('userData', JSON.stringify(userResponse.data));

@@ -1,6 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
-import { useEffect, useState } from 'react';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -39,9 +39,9 @@ const ErrorCode = styled.h1`
   position: relative;
   opacity: 0;
   animation: ${fadeIn} 0.6s ease-out 0.2s forwards;
-  
+
   &::after {
-    content: "404";
+    content: '404';
     position: absolute;
     top: 0.2rem;
     left: 0.2rem;
@@ -78,7 +78,7 @@ const HomeButton = styled.button`
   transition: all 0.2s ease-in-out;
   opacity: 0;
   animation: ${fadeIn} 0.6s ease-out 1s forwards;
-  
+
   &:hover {
     background-color: ${props => props.theme.colors.primaryDark || '#0056b3'};
     transform: translateY(-3px);
@@ -90,7 +90,7 @@ const Illustration = styled.div`
   margin: 2rem 0;
   font-size: 5rem;
   opacity: 0;
-  animation: 
+  animation:
     ${fadeIn} 0.6s ease-out 0.8s forwards,
     ${bounce} 2s ease-in-out 1.4s infinite;
 `;
@@ -120,7 +120,7 @@ const RecentLink = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
+
   &:hover {
     background-color: #e9ecef;
     animation: ${pulse} 0.5s ease-in-out;
@@ -145,7 +145,7 @@ interface RecentPage {
 export const NotFoundPage = () => {
   const navigate = useNavigate();
   const [recentPages, setRecentPages] = useState<RecentPage[]>([]);
-  
+
   useEffect(() => {
     try {
       const recentVisits = localStorage.getItem('recentPages');
@@ -157,25 +157,23 @@ export const NotFoundPage = () => {
       console.error('Failed to load recent pages:', error);
     }
   }, []);
-  
+
   const handleRandomEmoji = () => {
     const emojis = ['🔍', '🧩', '🚧', '📋', '🤔', '🔎'];
     return emojis[Math.floor(Math.random() * emojis.length)];
   };
-  
+
   return (
     <NotFoundContainer>
       <ErrorCode>404</ErrorCode>
       <Title>페이지를 찾을 수 없습니다</Title>
       <Description>
-        요청하신 페이지가 존재하지 않거나, 이동되었거나, 삭제되었을 수 있습니다.
-        URL을 확인하시거나 아래 버튼을 클릭하여 홈으로 돌아가세요.
+        요청하신 페이지가 존재하지 않거나, 이동되었거나, 삭제되었을 수 있습니다. URL을 확인하시거나
+        아래 버튼을 클릭하여 홈으로 돌아가세요.
       </Description>
       <Illustration>{handleRandomEmoji()}</Illustration>
-      <HomeButton onClick={() => navigate('/')}>
-        홈으로 돌아가기
-      </HomeButton>
-      
+      <HomeButton onClick={() => navigate('/')}>홈으로 돌아가기</HomeButton>
+
       {recentPages.length > 0 && (
         <RecentVisited>
           <RecentTitle>최근 방문한 페이지</RecentTitle>
@@ -189,4 +187,4 @@ export const NotFoundPage = () => {
       )}
     </NotFoundContainer>
   );
-}
+};

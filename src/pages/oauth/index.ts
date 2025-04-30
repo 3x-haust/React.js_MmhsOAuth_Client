@@ -1,1 +1,1 @@
-export { OAuthCallback } from './ui'
+export { OAuthCallback } from './ui';

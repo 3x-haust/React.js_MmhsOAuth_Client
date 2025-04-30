@@ -1,17 +1,10 @@
-import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import { useAuthStore } from "@/features/auth";
-import Cookies from "js-cookie";
+import Cookies from 'js-cookie';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
-interface ClientInfo {
-  id: number;
-  clientId: string;
-  serviceName: string;
-  serviceDomain: string;
-  scope: string;
-  allowedUserType: string;
-}
+import { useAuthStore } from '@/features/auth';
+import { getClientInfo, submitConsent, refreshToken, ClientInfo } from '@/features/oauth';
 
 export const ConsentPage = () => {
   const [searchParams] = useSearchParams();
@@ -19,129 +12,103 @@ export const ConsentPage = () => {
   const { user, login } = useAuthStore();
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
-  const clientId = searchParams.get("client_id");
-  const redirectUri = searchParams.get("redirect_uri");
-  const state = searchParams.get("state");
-  const scope = searchParams.get("scope");
-  const responseType = searchParams.get("response_type");
-
-  const refreshToken = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({refreshToken: Cookies.get('refreshToken')}),
-      });
-
-      const data = await response.json();
-
-      if (data.status === 200 && data.data?.accessToken) {
-        login(data.data.accessToken, data.data.refreshToken);
-        return data.data.accessToken;
-      } else {
-        throw new Error(data.message || 'Failed to refresh token');
-      }
-    } catch (error) {
-      console.error('Error refreshing token:', error);
-      navigate('/login?redirect=/oauth/manage');
-      return null;
-    }
-  };
+  const clientId = searchParams.get('client_id');
+  const redirectUri = searchParams.get('redirect_uri');
+  const state = searchParams.get('state');
+  const scope = searchParams.get('scope');
+  const responseType = searchParams.get('response_type');
 
   useEffect(() => {
-    const token = Cookies.get("accessToken");
+    const token = Cookies.get('accessToken');
     if (!user && !token) {
-      navigate(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      navigate(
+        `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`
+      );
       return;
     }
 
     if (!clientId || !redirectUri || !state || !responseType) {
-      setError("필수 매개변수가 누락되었습니다.");
+      setError('필수 매개변수가 누락되었습니다.');
       setLoading(false);
       return;
     }
 
     const fetchClientInfo = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${clientId}`, {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("accessToken")}`,
-          },
-        });
-        const data = await res.json();
+        if (!clientId) return;
+
+        const data = await getClientInfo(clientId);
 
         if (data.status === 200) {
           setClientInfo(data.data);
-        } else if (data.status === 401 && data.message === "TOKEN_EXPIRED") {
-          const refreshSuccess = await refreshToken();
-          if (refreshSuccess) {
+        } else if (data.status === 401 && data.message === 'TOKEN_EXPIRED') {
+          try {
+            const refreshData = await refreshToken();
+            login(refreshData.accessToken, refreshData.refreshToken);
             fetchClientInfo();
-          } else {
-            navigate(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+          } catch {
+            navigate(
+              `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`
+            );
           }
         } else {
-          setError(data.message || "클라이언트 정보를 가져오는데 실패했습니다.");
+          setError(data.message || '클라이언트 정보를 가져오는데 실패했습니다.');
         }
       } catch (err) {
-        console.error("Error fetching client info:", err);
-        setError("클라이언트 정보를 가져오는데 실패했습니다.");
+        console.error('Error fetching client info:', err);
+        setError('클라이언트 정보를 가져오는데 실패했습니다.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchClientInfo();
-  }, [clientId, navigate, redirectUri, responseType, state, user]);
+  }, [clientId, navigate, redirectUri, responseType, state, user, login]);
 
   const handleConsent = async (approved: boolean) => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth/consent`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("accessToken")}`,
-        },
-        body: JSON.stringify({
-          client_id: clientId,
-          redirect_uri: redirectUri,
-          state,
-          approved,
-          scope,
-        }),
+      const data = await submitConsent({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        state,
+        approved,
+        scope,
       });
-
-      const data = await res.json();
 
       if (data.status === 200 && data.data?.url) {
         window.location.href = data.data.url;
-      } else if (data.status === 401 && data.message === "TOKEN_EXPIRED") {
-        const refreshSuccess = await refreshToken();
-        if (refreshSuccess) {
+      } else if (data.status === 401 && data.message === 'TOKEN_EXPIRED') {
+        try {
+          const refreshData = await refreshToken();
+          login(refreshData.accessToken, refreshData.refreshToken);
           handleConsent(approved);
-        } else {
-          navigate(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        } catch {
+          navigate(
+            `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`
+          );
           setLoading(false);
         }
-      } else {        
-        setError(data.message || "권한 부여 요청 처리 중 오류가 발생했습니다.");
+      } else {
+        setError(data.message || '권한 부여 요청 처리 중 오류가 발생했습니다.');
         setLoading(false);
       }
     } catch (err) {
-      console.error("Error during consent:", err);
-      setError("권한 부여 요청 처리 중 오류가 발생했습니다.");
+      console.error('Error during consent:', err);
+      setError('권한 부여 요청 처리 중 오류가 발생했습니다.');
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <Container><LoadingText>로딩 중...</LoadingText></Container>;
+    return (
+      <Container>
+        <LoadingText>로딩 중...</LoadingText>
+      </Container>
+    );
   }
 
   if (error) {
@@ -150,31 +117,35 @@ export const ConsentPage = () => {
         <ErrorContainer>
           <h2>오류 발생</h2>
           <ErrorMessage>{error}</ErrorMessage>
-          <Button onClick={() => navigate("/")}>홈으로 돌아가기</Button>
+          <Button onClick={() => navigate('/')}>홈으로 돌아가기</Button>
         </ErrorContainer>
       </Container>
     );
   }
 
-  const scopeItems = scope?.split(",").map((item) => item.trim()) || [];
+  const scopeItems = scope?.split(',').map(item => item.trim()) || [];
 
   const scopeDescriptions: Record<string, string> = {
-    email: "이메일 주소",
-    nickname: "닉네임",
-    role: "역할 (학생/교사)",
-    major: "전공",
-    admission: "입학년도",
-    generation: "기수",
-    isGraduated: "졸업 여부",
+    email: '이메일 주소',
+    nickname: '닉네임',
+    role: '역할 (학생/교사)',
+    major: '전공',
+    admission: '입학년도',
+    generation: '기수',
+    isGraduated: '졸업 여부',
   };
 
   return (
     <Container>
       <ConsentContainer>
         <ServiceInfo>
-          <Logo src={`https://logo.clearbit.com/${clientInfo?.serviceDomain}`} alt="서비스 로고" onError={(e) => {
-            e.currentTarget.src = "/default-logo.png";
-          }} />
+          <Logo
+            src={`https://logo.clearbit.com/${clientInfo?.serviceDomain}`}
+            alt='서비스 로고'
+            onError={e => {
+              e.currentTarget.src = '/default-logo.png';
+            }}
+          />
           <h2>{clientInfo?.serviceName}</h2>
           <ServiceUrl>{clientInfo?.serviceDomain}</ServiceUrl>
         </ServiceInfo>
@@ -184,19 +155,19 @@ export const ConsentPage = () => {
         </ConsentMessage>
 
         <ScopeList>
-          {scopeItems.map((scopeItem) => (
+          {scopeItems.map(scopeItem => (
             <ScopeItem key={scopeItem}>
               <ScopeIcon>✓</ScopeIcon>
               <div>
                 <ScopeName>{scopeDescriptions[scopeItem] || scopeItem}</ScopeName>
                 <ScopeDescription>
-                  {scopeItem === "email" && "앱이 사용자의 학교 이메일 주소를 확인합니다."}
-                  {scopeItem === "nickname" && "앱이 사용자의 닉네임을 사용합니다."}
-                  {scopeItem === "role" && "앱이 사용자의 학교 내 역할(학생/교사)을 확인합니다."}
-                  {scopeItem === "major" && "앱이 사용자의 전공 정보를 확인합니다."}
-                  {scopeItem === "admission" && "앱이 사용자의 입학년도 정보를 확인합니다."}
-                  {scopeItem === "generation" && "앱이 사용자의 기수 정보를 확인합니다."}
-                  {scopeItem === "isGraduated" && "앱이 사용자의 졸업 여부를 확인합니다."}
+                  {scopeItem === 'email' && '앱이 사용자의 학교 이메일 주소를 확인합니다.'}
+                  {scopeItem === 'nickname' && '앱이 사용자의 닉네임을 사용합니다.'}
+                  {scopeItem === 'role' && '앱이 사용자의 학교 내 역할(학생/교사)을 확인합니다.'}
+                  {scopeItem === 'major' && '앱이 사용자의 전공 정보를 확인합니다.'}
+                  {scopeItem === 'admission' && '앱이 사용자의 입학년도 정보를 확인합니다.'}
+                  {scopeItem === 'generation' && '앱이 사용자의 기수 정보를 확인합니다.'}
+                  {scopeItem === 'isGraduated' && '앱이 사용자의 졸업 여부를 확인합니다.'}
                 </ScopeDescription>
               </div>
             </ScopeItem>

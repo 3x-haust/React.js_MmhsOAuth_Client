@@ -1,7 +1,10 @@
-import { Helmet } from "react-helmet";
-import { useState, useEffect, useMemo } from "react";
-import styled from "styled-components";
-import { theme } from "@/app/styles/index";
+import { useState, useEffect, useMemo } from 'react';
+import { Helmet } from 'react-helmet';
+import { useLocation, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+import { theme } from '@/app/styles/index';
+import { useAuthStore } from '@/features/auth';
 import {
   logIn,
   sendVerificationCode,
@@ -9,9 +12,7 @@ import {
   getUserInfo,
   requestPasswordReset,
   findNickname,
-} from "@/features/auth/api/index";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/features/auth";
+} from '@/features/auth/api/index';
 
 const PageContainer = styled.div`
   display: flex;
@@ -70,16 +71,16 @@ const Input = styled.input`
 
 const Button = styled.button<{ $disabled?: boolean }>`
   padding: 0.8rem;
-  background-color: ${(props) => (props.$disabled ? "#ccc" : theme.primary)};
+  background-color: ${props => (props.$disabled ? '#ccc' : theme.primary)};
   color: white;
   border: none;
   border-radius: 4px;
-  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+  cursor: ${props => (props.$disabled ? 'not-allowed' : 'pointer')};
   transition: background-color 0.2s;
 `;
 
 const ValidationMessage = styled.small<{ $valid: boolean }>`
-  color: ${(props) => (props.$valid ? theme.primary : "red")};
+  color: ${props => (props.$valid ? theme.primary : 'red')};
   margin-top: -0.5rem;
   text-align: left;
 `;
@@ -88,16 +89,16 @@ type FormMode = 'login' | 'signup' | 'findNickname' | 'resetPassword';
 
 export const LoginPage = () => {
   const [formData, setFormData] = useState({
-    email: "",
-    nickname: "",
-    password: "",
-    code: "",
+    email: '',
+    nickname: '',
+    password: '',
+    code: '',
   });
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorColor, setErrorColor] = useState("red");
+  const [errorColor, setErrorColor] = useState('red');
   const [formMode, setFormMode] = useState<FormMode>('login');
   const [fieldValidity, setFieldValidity] = useState({
     email: false,
@@ -109,17 +110,23 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const queryParams = new URLSearchParams(location.search);
-  const redirectUrl = queryParams.get("redirect") || "";
-  const fullRedirectUrl = redirectUrl ? redirectUrl +
-      "&response_type=" + queryParams.get("response_type") +
-      "&state=" + queryParams.get("state") +
-      "&redirect_uri=" + queryParams.get("redirect_uri") +
-      "&scope=" + queryParams.get("scope") : "";
-  
+  const redirectUrl = queryParams.get('redirect') || '';
+  const fullRedirectUrl = redirectUrl
+    ? redirectUrl +
+      '&response_type=' +
+      queryParams.get('response_type') +
+      '&state=' +
+      queryParams.get('state') +
+      '&redirect_uri=' +
+      queryParams.get('redirect_uri') +
+      '&scope=' +
+      queryParams.get('scope')
+    : '';
+
   useEffect(() => {
-    setFormData({ email: "", nickname: "", password: "", code: "" });
+    setFormData({ email: '', nickname: '', password: '', code: '' });
     setTimeLeft(0);
-    setError("");
+    setError('');
     setFieldValidity({
       email: false,
       nickname: false,
@@ -131,7 +138,7 @@ export const LoginPage = () => {
   useEffect(() => {
     if (timeLeft > 0) {
       const timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        setTimeLeft(prev => prev - 1);
       }, 1000);
       return () => clearInterval(timer);
     }
@@ -152,27 +159,27 @@ export const LoginPage = () => {
       };
     } else if (formMode === 'signup') {
       return {
-        email: formData.email.trim() !== "" && isValidEmail(formData.email),
+        email: formData.email.trim() !== '' && isValidEmail(formData.email),
         nickname: !!formData.nickname.trim(),
         password: formData.password.trim().length >= 8,
         code: !!formData.code.trim(),
       };
     } else if (formMode === 'findNickname') {
       return {
-        email: formData.email.trim() !== "" && isValidEmail(formData.email),
+        email: formData.email.trim() !== '' && isValidEmail(formData.email),
         nickname: true,
         password: true,
         code: true,
       };
     } else if (formMode === 'resetPassword') {
       return {
-        email: formData.email.trim() !== "" && isValidEmail(formData.email),
+        email: formData.email.trim() !== '' && isValidEmail(formData.email),
         nickname: true,
         password: true,
         code: true,
       };
     }
-    
+
     return {
       email: false,
       nickname: false,
@@ -185,19 +192,19 @@ export const LoginPage = () => {
     setFieldValidity(isFormValid);
   }, [isFormValid]);
 
-  const showError = (message: string, color = "red") => {
+  const showError = (message: string, color = 'red') => {
     setError(message);
     setShowErrorModal(true);
     setErrorColor(color);
     setTimeout(() => {
       setShowErrorModal(false);
-      setError("");
+      setError('');
     }, 2000);
   };
 
   const handleSendCode = async () => {
     if (!formData.email.trim()) {
-      showError("이메일을 입력해주세요");
+      showError('이메일을 입력해주세요');
       return;
     }
     try {
@@ -207,7 +214,7 @@ export const LoginPage = () => {
         setTimeLeft(300);
       }
     } catch (err) {
-      showError(err instanceof Error ? err.message : "요청 처리 실패");
+      showError(err instanceof Error ? err.message : '요청 처리 실패');
     } finally {
       setLoading(false);
     }
@@ -216,26 +223,26 @@ export const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!Object.values(isFormValid).every(Boolean)) {
-      showError("모든 필드를 올바르게 입력해주세요");
+      showError('모든 필드를 올바르게 입력해주세요');
       return;
     }
     setLoading(true);
     try {
       if (formMode === 'signup') {
         await signUp(formData);
-        showError("회원가입 성공! 로그인해주세요", "green");
+        showError('회원가입 성공! 로그인해주세요', 'green');
         setFormMode('login');
       } else if (formMode === 'login') {
         const responseData = await logIn(formData.nickname, formData.password);
         if (responseData.status === 200) {
           const data = responseData.data;
-          const accessToken = typeof data === "string" ? data : data?.accessToken;
-          const refreshToken = typeof data === "string" ? data : data?.refreshToken;
-          
+          const accessToken = typeof data === 'string' ? data : data?.accessToken;
+          const refreshToken = typeof data === 'string' ? data : data?.refreshToken;
+
           if (!accessToken || !refreshToken) {
-            throw new Error("Authentication token not received");
+            throw new Error('Authentication token not received');
           }
-          
+
           try {
             const userResponse = await getUserInfo(accessToken);
             if (userResponse.status === 200 && userResponse.data) {
@@ -244,34 +251,34 @@ export const LoginPage = () => {
               login(accessToken, refreshToken);
             }
           } catch (error) {
-            console.error("Failed to fetch user info:", error);
+            console.error('Failed to fetch user info:', error);
             login(accessToken, refreshToken);
           }
 
           if (fullRedirectUrl) {
-            if (fullRedirectUrl.startsWith("/")) {
+            if (fullRedirectUrl.startsWith('/')) {
               navigate(fullRedirectUrl);
             } else {
               window.location.href = fullRedirectUrl;
             }
           } else {
-            navigate("/");
+            navigate('/');
           }
         } else {
-          showError("로그인 데이터가 올바르지 않습니다");
+          showError('로그인 데이터가 올바르지 않습니다');
         }
       } else if (formMode === 'findNickname') {
         await findNickname(formData.email);
-        showError("닉네임이 이메일로 전송되었습니다.", "black");
+        showError('닉네임이 이메일로 전송되었습니다.', 'black');
       } else if (formMode === 'resetPassword') {
         await requestPasswordReset(formData.email);
-        showError("비밀번호 재설정 링크가 이메일로 전송되었습니다.", "black");
+        showError('비밀번호 재설정 링크가 이메일로 전송되었습니다.', 'black');
       }
     } catch (err) {
       if (err instanceof Error) {
         showError(err.message);
       } else {
-        showError("알 수 없는 오류가 발생했습니다");
+        showError('알 수 없는 오류가 발생했습니다');
       }
     } finally {
       setLoading(false);
@@ -284,40 +291,33 @@ export const LoginPage = () => {
         return (
           <>
             <Input
-              type="text"
-              placeholder="닉네임"
+              type='text'
+              placeholder='닉네임'
               value={formData.nickname}
-              onChange={(e) =>
-                setFormData({ ...formData, nickname: e.target.value })
-              }
-              style={{ borderColor: fieldValidity.nickname ? "#ddd" : "red" }}
+              onChange={e => setFormData({ ...formData, nickname: e.target.value })}
+              style={{ borderColor: fieldValidity.nickname ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.nickname}>
-              {fieldValidity.nickname ? "" : "닉네임을 입력해주세요"}
+              {fieldValidity.nickname ? '' : '닉네임을 입력해주세요'}
             </ValidationMessage>
 
             <Input
-              type="password"
-              placeholder="비밀번호"
+              type='password'
+              placeholder='비밀번호'
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              style={{ borderColor: fieldValidity.password ? "#ddd" : "red" }}
+              onChange={e => setFormData({ ...formData, password: e.target.value })}
+              style={{ borderColor: fieldValidity.password ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.password}>
-              {formData.password.trim() === ""
-                ? "비밀번호를 입력해주세요"
+              {formData.password.trim() === ''
+                ? '비밀번호를 입력해주세요'
                 : fieldValidity.password
-                ? ""
-                : "비밀번호를 입력해주세요"}
+                  ? ''
+                  : '비밀번호를 입력해주세요'}
             </ValidationMessage>
 
-            <Button
-              type="submit"
-              $disabled={!Object.values(isFormValid).every(Boolean) || loading}
-            >
-              {loading ? "처리 중..." : "로그인"}
+            <Button type='submit' $disabled={!Object.values(isFormValid).every(Boolean) || loading}>
+              {loading ? '처리 중...' : '로그인'}
             </Button>
           </>
         );
@@ -326,79 +326,64 @@ export const LoginPage = () => {
         return (
           <>
             <Input
-              type="email"
-              placeholder="이메일"
+              type='email'
+              placeholder='이메일'
               value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              style={{ borderColor: fieldValidity.email ? "#ddd" : "red" }}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
+              style={{ borderColor: fieldValidity.email ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.email}>
-              {formData.email.trim() === ""
-                ? "이메일을 입력해주세요"
+              {formData.email.trim() === ''
+                ? '이메일을 입력해주세요'
                 : fieldValidity.email
-                ? ""
-                : "유효한 이메일을 입력해주세요"}
+                  ? ''
+                  : '유효한 이메일을 입력해주세요'}
             </ValidationMessage>
 
             <Input
-              type="text"
-              placeholder="닉네임"
+              type='text'
+              placeholder='닉네임'
               value={formData.nickname}
-              onChange={(e) =>
-                setFormData({ ...formData, nickname: e.target.value })
-              }
-              style={{ borderColor: fieldValidity.nickname ? "#ddd" : "red" }}
+              onChange={e => setFormData({ ...formData, nickname: e.target.value })}
+              style={{ borderColor: fieldValidity.nickname ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.nickname}>
-              {fieldValidity.nickname ? "" : "닉네임을 입력해주세요"}
+              {fieldValidity.nickname ? '' : '닉네임을 입력해주세요'}
             </ValidationMessage>
 
             <Input
-              type="password"
-              placeholder="비밀번호"
+              type='password'
+              placeholder='비밀번호'
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              style={{ borderColor: fieldValidity.password ? "#ddd" : "red" }}
+              onChange={e => setFormData({ ...formData, password: e.target.value })}
+              style={{ borderColor: fieldValidity.password ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.password}>
-              {formData.password.trim() === ""
-                ? "비밀번호를 입력해주세요"
+              {formData.password.trim() === ''
+                ? '비밀번호를 입력해주세요'
                 : fieldValidity.password
-                ? ""
-                : "8자리 이상의 비밀번호를 입력해주세요"}
+                  ? ''
+                  : '8자리 이상의 비밀번호를 입력해주세요'}
             </ValidationMessage>
 
             <Input
-              type="number"
-              placeholder="인증코드"
+              type='number'
+              placeholder='인증코드'
               value={formData.code}
-              onChange={(e) =>
-                setFormData({ ...formData, code: e.target.value })
-              }
+              onChange={e => setFormData({ ...formData, code: e.target.value })}
               style={{
-                borderColor: fieldValidity.code ? "#ddd" : "red",
+                borderColor: fieldValidity.code ? '#ddd' : 'red',
               }}
             />
             <ValidationMessage $valid={fieldValidity.code}>
-              {fieldValidity.code ? "" : "인증코드를 입력해주세요"}
+              {fieldValidity.code ? '' : '인증코드를 입력해주세요'}
             </ValidationMessage>
-            <Button
-              type="button"
-              onClick={handleSendCode}
-              $disabled={timeLeft > 0 || loading}
-            >
-              {timeLeft > 0 ? "인증코드 재전송" : "인증코드 전송"}
+            <Button type='button' onClick={handleSendCode} $disabled={timeLeft > 0 || loading}>
+              {timeLeft > 0 ? '인증코드 재전송' : '인증코드 전송'}
             </Button>
 
-            <Button
-              type="submit"
-              $disabled={!Object.values(isFormValid).every(Boolean) || loading}
-            >
-              {loading ? "처리 중..." : "회원가입"}
+            <Button type='submit' $disabled={!Object.values(isFormValid).every(Boolean) || loading}>
+              {loading ? '처리 중...' : '회원가입'}
             </Button>
           </>
         );
@@ -407,27 +392,22 @@ export const LoginPage = () => {
         return (
           <>
             <Input
-              type="email"
-              placeholder="이메일"
+              type='email'
+              placeholder='이메일'
               value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              style={{ borderColor: fieldValidity.email ? "#ddd" : "red" }}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
+              style={{ borderColor: fieldValidity.email ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.email}>
-              {formData.email.trim() === ""
-                ? "이메일을 입력해주세요"
+              {formData.email.trim() === ''
+                ? '이메일을 입력해주세요'
                 : fieldValidity.email
-                ? ""
-                : "유효한 이메일을 입력해주세요"}
+                  ? ''
+                  : '유효한 이메일을 입력해주세요'}
             </ValidationMessage>
 
-            <Button
-              type="submit"
-              $disabled={!fieldValidity.email || loading}
-            >
-              {loading ? "처리 중..." : "닉네임 찾기"}
+            <Button type='submit' $disabled={!fieldValidity.email || loading}>
+              {loading ? '처리 중...' : '닉네임 찾기'}
             </Button>
           </>
         );
@@ -436,27 +416,22 @@ export const LoginPage = () => {
         return (
           <>
             <Input
-              type="email"
-              placeholder="이메일"
+              type='email'
+              placeholder='이메일'
               value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              style={{ borderColor: fieldValidity.email ? "#ddd" : "red" }}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
+              style={{ borderColor: fieldValidity.email ? '#ddd' : 'red' }}
             />
             <ValidationMessage $valid={fieldValidity.email}>
-              {formData.email.trim() === ""
-                ? "이메일을 입력해주세요"
+              {formData.email.trim() === ''
+                ? '이메일을 입력해주세요'
                 : fieldValidity.email
-                ? ""
-                : "유효한 이메일을 입력해주세요"}
+                  ? ''
+                  : '유효한 이메일을 입력해주세요'}
             </ValidationMessage>
 
-            <Button
-              type="submit"
-              $disabled={!fieldValidity.email || loading}
-            >
-              {loading ? "처리 중..." : "비밀번호 재설정 링크 요청"}
+            <Button type='submit' $disabled={!fieldValidity.email || loading}>
+              {loading ? '처리 중...' : '비밀번호 재설정 링크 요청'}
             </Button>
           </>
         );
@@ -471,31 +446,31 @@ export const LoginPage = () => {
         return (
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              flexDirection: "row",
-              gap: "0.5rem",
+              display: 'flex',
+              justifyContent: 'center',
+              flexDirection: 'row',
+              gap: '0.5rem',
             }}
           >
             <Button
-              type="button"
+              type='button'
               onClick={() => setFormMode('signup')}
               $disabled={loading}
-              style={{ background: "none", color: theme.primary }}
+              style={{ background: 'none', color: theme.primary }}
             >
               회원가입
             </Button>
             <Button
-              type="button"
+              type='button'
               onClick={() => setFormMode('findNickname')}
-              style={{ background: "none", color: theme.primary }}
+              style={{ background: 'none', color: theme.primary }}
             >
               닉네임 찾기
             </Button>
             <Button
-              type="button"
+              type='button'
               onClick={() => setFormMode('resetPassword')}
-              style={{ background: "none", color: theme.primary }}
+              style={{ background: 'none', color: theme.primary }}
             >
               비밀번호 찾기
             </Button>
@@ -506,10 +481,10 @@ export const LoginPage = () => {
       case 'resetPassword':
         return (
           <Button
-            type="button"
+            type='button'
             onClick={() => setFormMode('login')}
             $disabled={loading}
-            style={{ background: "none", color: theme.primary }}
+            style={{ background: 'none', color: theme.primary }}
           >
             로그인 화면으로 돌아가기
           </Button>
@@ -521,11 +496,16 @@ export const LoginPage = () => {
 
   const getFormTitle = () => {
     switch (formMode) {
-      case 'login': return "로그인";
-      case 'signup': return "회원가입";
-      case 'findNickname': return "닉네임 찾기";
-      case 'resetPassword': return "비밀번호 재설정";
-      default: return "";
+      case 'login':
+        return '로그인';
+      case 'signup':
+        return '회원가입';
+      case 'findNickname':
+        return '닉네임 찾기';
+      case 'resetPassword':
+        return '비밀번호 재설정';
+      default:
+        return '';
     }
   };
 
@@ -536,28 +516,19 @@ export const LoginPage = () => {
       </Helmet>
       <PageContainer>
         <ContentWrapper>
-          <h2 style={{ textAlign: "left" }}>
-            {getFormTitle()}
-          </h2>
-          <Form onSubmit={handleSubmit}>
-            {renderForm()}
-          </Form>
-          <div style={{ marginTop: "1rem", textAlign: "center" }}>
-            {renderFormFooter()}
-          </div>
+          <h2 style={{ textAlign: 'left' }}>{getFormTitle()}</h2>
+          <Form onSubmit={handleSubmit}>{renderForm()}</Form>
+          <div style={{ marginTop: '1rem', textAlign: 'center' }}>{renderFormFooter()}</div>
         </ContentWrapper>
       </PageContainer>
       {showErrorModal && (
-          <ErrorModal>
-            <p style={{ color: errorColor }}>{error}</p>
-            <Button
-              onClick={() => setShowErrorModal(false)}
-              style={{ marginTop: '1rem' }}
-            >
-              확인
-            </Button>
-          </ErrorModal>
-        )}
+        <ErrorModal>
+          <p style={{ color: errorColor }}>{error}</p>
+          <Button onClick={() => setShowErrorModal(false)} style={{ marginTop: '1rem' }}>
+            확인
+          </Button>
+        </ErrorModal>
+      )}
     </>
   );
 };

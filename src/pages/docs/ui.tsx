@@ -1,13 +1,21 @@
-import { useState } from "react";
-import styled from "styled-components";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import styled from 'styled-components';
 
 const DocsContainer = styled.div`
   max-width: 900px;
   margin: 0 auto;
   padding: 40px 20px;
-  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    'Pretendard',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
 `;
 
 const Title = styled.h1`
@@ -68,7 +76,7 @@ const InlineCode = styled.code`
   color: ${({ theme }) => theme.colors?.codeText || '#333'};
   padding: 0.2em 0.4em;
   border-radius: 3px;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
   font-size: 90%;
 `;
 
@@ -100,24 +108,20 @@ const TableOfContentsList = styled.ol`
 
 const CodeSample = ({ language, code }: { language: string; code: string }) => (
   <CodeBlock>
-    <SyntaxHighlighter
-      language={language}
-      style={atomDark}
-      showLineNumbers
-    >
+    <SyntaxHighlighter language={language} style={atomDark} showLineNumbers>
       {code}
     </SyntaxHighlighter>
   </CodeBlock>
 );
 
 export const DocsPage = () => {
-  const [, setActiveSection] = useState("");
+  const [, setActiveSection] = useState('');
 
   const scrollToSection = (id: string) => {
     setActiveSection(id);
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -125,30 +129,118 @@ export const DocsPage = () => {
     <DocsContainer>
       <Title>미림마이스터고 OAuth 구현 가이드</Title>
       <Paragraph>
-        이 문서는 미림마이스터고 OAuth 서비스를 웹 애플리케이션에 연동하는 방법을 설명합니다. 
-        본 가이드는 필요한 API 엔드포인트, 인증 흐름, 예제 코드를 포함하고 있습니다.
+        이 문서는 미림마이스터고 OAuth 서비스를 웹 애플리케이션에 연동하는 방법을 설명합니다. 본
+        가이드는 필요한 API 엔드포인트, 인증 흐름, 예제 코드를 포함하고 있습니다.
       </Paragraph>
 
       <TableOfContents>
         <TableOfContentsTitle>목차</TableOfContentsTitle>
         <TableOfContentsList>
-          <li><Link href="#start" onClick={(e) => { e.preventDefault(); scrollToSection("start"); }}>시작하기 전에</Link></li>
-          <li><Link href="#flow" onClick={(e) => { e.preventDefault(); scrollToSection("flow"); }}>OAuth 흐름 개요</Link></li>
-          <li><Link href="#register" onClick={(e) => { e.preventDefault(); scrollToSection("register"); }}>클라이언트 등록</Link></li>
-          <li><Link href="#auth" onClick={(e) => { e.preventDefault(); scrollToSection("auth"); }}>인증 요청 (로그인)</Link></li>
-          <li><Link href="#token" onClick={(e) => { e.preventDefault(); scrollToSection("token"); }}>액세스 토큰 얻기</Link></li>
-          <li><Link href="#user" onClick={(e) => { e.preventDefault(); scrollToSection("user"); }}>사용자 정보 가져오기</Link></li>
-          <li><Link href="#refresh" onClick={(e) => { e.preventDefault(); scrollToSection("refresh"); }}>토큰 갱신</Link></li>
-          <li><Link href="#example" onClick={(e) => { e.preventDefault(); scrollToSection("example"); }}>전체 구현 예제</Link></li>
-          <li><Link href="#faq" onClick={(e) => { e.preventDefault(); scrollToSection("faq"); }}>자주 묻는 질문</Link></li>
+          <li>
+            <Link
+              href='#start'
+              onClick={e => {
+                e.preventDefault();
+                scrollToSection('start');
+              }}
+            >
+              시작하기 전에
+            </Link>
+          </li>
+          <li>
+            <Link
+              href='#flow'
+              onClick={e => {
+                e.preventDefault();
+                scrollToSection('flow');
+              }}
+            >
+              OAuth 흐름 개요
+            </Link>
+          </li>
+          <li>
+            <Link
+              href='#register'
+              onClick={e => {
+                e.preventDefault();
+                scrollToSection('register');
+              }}
+            >
+              클라이언트 등록
+            </Link>
+          </li>
+          <li>
+            <Link
+              href='#auth'
+              onClick={e => {
+                e.preventDefault();
+                scrollToSection('auth');
+              }}
+            >
+              인증 요청 (로그인)
+            </Link>
+          </li>
+          <li>
+            <Link
+              href='#token'
+              onClick={e => {
+                e.preventDefault();
+                scrollToSection('token');
+              }}
+            >
+              액세스 토큰 얻기
+            </Link>
+          </li>
+          <li>
+            <Link
+              href='#user'
+              onClick={e => {
+                e.preventDefault();
+                scrollToSection('user');
+              }}
+            >
+              사용자 정보 가져오기
+            </Link>
+          </li>
+          <li>
+            <Link
+              href='#refresh'
+              onClick={e => {
+                e.preventDefault();
+                scrollToSection('refresh');
+              }}
+            >
+              토큰 갱신
+            </Link>
+          </li>
+          <li>
+            <Link
+              href='#example'
+              onClick={e => {
+                e.preventDefault();
+                scrollToSection('example');
+              }}
+            >
+              전체 구현 예제
+            </Link>
+          </li>
+          <li>
+            <Link
+              href='#faq'
+              onClick={e => {
+                e.preventDefault();
+                scrollToSection('faq');
+              }}
+            >
+              자주 묻는 질문
+            </Link>
+          </li>
         </TableOfContentsList>
       </TableOfContents>
 
-      <Section id="start">
+      <Section id='start'>
         <SectionTitle>시작하기 전에</SectionTitle>
-        <Paragraph>
-          미림마이스터고 OAuth 서비스를 사용하기 위해서는 다음이 필요합니다:
-        </Paragraph>
+        <Paragraph>미림마이스터고 OAuth 서비스를 사용하기 위해서는 다음이 필요합니다:</Paragraph>
         <List>
           <li>OAuth 클라이언트 ID 및 시크릿</li>
           <li>등록된 리디렉션 URI</li>
@@ -156,11 +248,9 @@ export const DocsPage = () => {
         </List>
       </Section>
 
-      <Section id="flow">
+      <Section id='flow'>
         <SectionTitle>OAuth 흐름 개요</SectionTitle>
-        <Paragraph>
-          미림마이스터고 OAuth는 표준 OAuth 2.0 인증 코드 흐름을 따릅니다:
-        </Paragraph>
+        <Paragraph>미림마이스터고 OAuth는 표준 OAuth 2.0 인증 코드 흐름을 따릅니다:</Paragraph>
         <List>
           <li>사용자가 서비스에서 "미림마이스터고 계정으로 로그인" 버튼 클릭</li>
           <li>사용자가 미림마이스터고 OAuth 서버로 리디렉션되어 로그인</li>
@@ -171,13 +261,16 @@ export const DocsPage = () => {
         </List>
       </Section>
 
-      <Section id="register">
+      <Section id='register'>
         <SectionTitle>클라이언트 등록</SectionTitle>
-        <Paragraph>
-          OAuth를 사용하기 전에 클라이언트 애플리케이션을 등록해야 합니다:
-        </Paragraph>
+        <Paragraph>OAuth를 사용하기 전에 클라이언트 애플리케이션을 등록해야 합니다:</Paragraph>
         <List>
-          <li><Link href="https://oauth.mmhs.kr/oauth/manage" target="_blank">미림마이스터고 OAuth 관리 페이지</Link>에 로그인</li>
+          <li>
+            <Link href='https://oauth.mmhs.kr/oauth/manage' target='_blank'>
+              미림마이스터고 OAuth 관리 페이지
+            </Link>
+            에 로그인
+          </li>
           <li>"새 애플리케이션 등록" 버튼 클릭</li>
           <li>필요한 정보 입력:</li>
           <List>
@@ -190,18 +283,19 @@ export const DocsPage = () => {
           <li>제출하면 클라이언트 ID와 시크릿이 발급됩니다</li>
         </List>
         <Note>
-          <strong>중요</strong>: 클라이언트 시크릿은 안전하게 보관하고 절대 프론트엔드 코드에 노출시키지 마세요!
+          <strong>중요</strong>: 클라이언트 시크릿은 안전하게 보관하고 절대 프론트엔드 코드에
+          노출시키지 마세요!
         </Note>
       </Section>
 
-      <Section id="auth">
+      <Section id='auth'>
         <SectionTitle>인증 요청 (로그인)</SectionTitle>
         <Paragraph>
           사용자가 미림마이스터고 계정으로 로그인하도록 하려면, 아래 URL로 리디렉션합니다:
         </Paragraph>
 
-        <CodeSample 
-          language="javascript"
+        <CodeSample
+          language='javascript'
           code={`function loginWithMMHS() {
   const clientId = "YOUR_CLIENT_ID";
   const redirectUri = encodeURIComponent("YOUR_REDIRECT_URI");
@@ -213,18 +307,20 @@ export const DocsPage = () => {
 }`}
         />
         <Note>
-          <strong>참고</strong>: <InlineCode>state</InlineCode> 파라미터는 CSRF 공격 방지를 위해 고유한 값을 사용하는 것이 좋습니다.
+          <strong>참고</strong>: <InlineCode>state</InlineCode> 파라미터는 CSRF 공격 방지를 위해
+          고유한 값을 사용하는 것이 좋습니다.
         </Note>
       </Section>
 
-      <Section id="token">
+      <Section id='token'>
         <SectionTitle>액세스 토큰 얻기</SectionTitle>
         <Paragraph>
-          사용자가 권한을 승인하면, 설정한 리디렉션 URI로 인증 코드와 함께 리디렉션됩니다. 이 코드를 사용하여 액세스 토큰을 요청하세요:
+          사용자가 권한을 승인하면, 설정한 리디렉션 URI로 인증 코드와 함께 리디렉션됩니다. 이 코드를
+          사용하여 액세스 토큰을 요청하세요:
         </Paragraph>
 
-        <CodeSample 
-          language="javascript"
+        <CodeSample
+          language='javascript'
           code={`async function getAccessToken(code, state) {
   const tokenEndpoint = 'https://oauth.mmhs.kr/api/v1/oauth/token';
   
@@ -261,18 +357,17 @@ export const DocsPage = () => {
 }`}
         />
         <Note>
-          <strong>중요</strong>: 이 요청은 반드시 백엔드에서 처리해야 합니다. 클라이언트 시크릿이 노출되지 않도록 주의하세요.
+          <strong>중요</strong>: 이 요청은 반드시 백엔드에서 처리해야 합니다. 클라이언트 시크릿이
+          노출되지 않도록 주의하세요.
         </Note>
       </Section>
 
-      <Section id="user">
+      <Section id='user'>
         <SectionTitle>사용자 정보 가져오기</SectionTitle>
-        <Paragraph>
-          액세스 토큰이 있으면 사용자 정보를 요청할 수 있습니다:
-        </Paragraph>
+        <Paragraph>액세스 토큰이 있으면 사용자 정보를 요청할 수 있습니다:</Paragraph>
 
-        <CodeSample 
-          language="javascript"
+        <CodeSample
+          language='javascript'
           code={`async function getUserInfo(accessToken) {
   try {
     const response = await fetch('https://oauth.mmhs.kr/api/v1/user', {
@@ -302,14 +397,14 @@ export const DocsPage = () => {
         />
       </Section>
 
-      <Section id="refresh">
+      <Section id='refresh'>
         <SectionTitle>토큰 갱신</SectionTitle>
         <Paragraph>
           액세스 토큰이 만료되면 리프레시 토큰을 사용하여 새 액세스 토큰을 요청할 수 있습니다:
         </Paragraph>
 
-        <CodeSample 
-          language="javascript"
+        <CodeSample
+          language='javascript'
           code={`async function refreshAccessToken() {
   const refreshToken = localStorage.getItem('refreshToken');
   
@@ -347,15 +442,13 @@ export const DocsPage = () => {
         />
       </Section>
 
-      <Section id="example">
+      <Section id='example'>
         <SectionTitle>전체 구현 예제</SectionTitle>
-        <Paragraph>
-          아래는 React 앱에서 미림마이스터고 OAuth를 구현하는 전체 예제입니다:
-        </Paragraph>
+        <Paragraph>아래는 React 앱에서 미림마이스터고 OAuth를 구현하는 전체 예제입니다:</Paragraph>
 
         <SubTitle>프론트엔드 - React 컴포넌트</SubTitle>
-        <CodeSample 
-          language="jsx"
+        <CodeSample
+          language='jsx'
           code={`import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -449,8 +542,8 @@ export function OAuthCallback() {
         />
 
         <SubTitle>사용자 정보 및 토큰 갱신 처리</SubTitle>
-        <CodeSample 
-          language="jsx"
+        <CodeSample
+          language='jsx'
           code={`// 사용자 정보 컴포넌트
 export function UserProfile() {
   const [user, setUser] = useState(null);
@@ -561,11 +654,12 @@ export function UserProfile() {
 
         <SubTitle>백엔드 구현 (Express.js)</SubTitle>
         <Note>
-          <strong>참고</strong>: 보안을 위해 실제 구현에서는 토큰 교환과 갱신을 백엔드에서 처리하는 것이 좋습니다.
+          <strong>참고</strong>: 보안을 위해 실제 구현에서는 토큰 교환과 갱신을 백엔드에서 처리하는
+          것이 좋습니다.
         </Note>
 
-        <CodeSample 
-          language="javascript"
+        <CodeSample
+          language='javascript'
           code={`const express = require('express');
 const axios = require('axios');
 const router = express.Router();
@@ -671,49 +765,66 @@ module.exports = router;`}
         />
       </Section>
 
-      <Section id="faq">
+      <Section id='faq'>
         <SectionTitle>자주 묻는 질문</SectionTitle>
 
         <SubTitle>Q: 어떤 권한 범위(scope)를 요청할 수 있나요?</SubTitle>
-        <Paragraph>
-          사용 가능한 권한 범위는 다음과 같습니다:
-        </Paragraph>
+        <Paragraph>사용 가능한 권한 범위는 다음과 같습니다:</Paragraph>
         <List>
-          <li><InlineCode>email</InlineCode>: 사용자의 이메일 주소</li>
-          <li><InlineCode>nickname</InlineCode>: 사용자의 닉네임</li>
-          <li><InlineCode>role</InlineCode>: 사용자의 역할 (학생/교사)</li>
-          <li><InlineCode>major</InlineCode>: 사용자의 전공 정보</li>
-          <li><InlineCode>admission</InlineCode>: 사용자의 입학년도</li>
-          <li><InlineCode>generation</InlineCode>: 사용자의 기수 정보</li>
-          <li><InlineCode>isGraduated</InlineCode>: 사용자의 졸업 여부</li>
+          <li>
+            <InlineCode>email</InlineCode>: 사용자의 이메일 주소
+          </li>
+          <li>
+            <InlineCode>nickname</InlineCode>: 사용자의 닉네임
+          </li>
+          <li>
+            <InlineCode>role</InlineCode>: 사용자의 역할 (학생/교사)
+          </li>
+          <li>
+            <InlineCode>major</InlineCode>: 사용자의 전공 정보
+          </li>
+          <li>
+            <InlineCode>admission</InlineCode>: 사용자의 입학년도
+          </li>
+          <li>
+            <InlineCode>generation</InlineCode>: 사용자의 기수 정보
+          </li>
+          <li>
+            <InlineCode>isGraduated</InlineCode>: 사용자의 졸업 여부
+          </li>
         </List>
 
         <SubTitle>Q: 토큰은 얼마나 오래 유효한가요?</SubTitle>
         <Paragraph>
-          액세스 토큰은 일반적으로 15분 동안 유효하며, 리프레시 토큰은 30일 동안 유효합니다. 
+          액세스 토큰은 일반적으로 15분 동안 유효하며, 리프레시 토큰은 30일 동안 유효합니다.
         </Paragraph>
 
         <SubTitle>Q: 사용자가 권한을 취소할 수 있나요?</SubTitle>
         <Paragraph>
-          네, 사용자는 미림마이스터고 OAuth 설정 페이지에서 언제든지 애플리케이션에 부여한 권한을 취소할 수 있습니다.
+          네, 사용자는 미림마이스터고 OAuth 설정 페이지에서 언제든지 애플리케이션에 부여한 권한을
+          취소할 수 있습니다.
         </Paragraph>
 
         <SubTitle>Q: 리디렉션 URI를 변경할 수 있나요?</SubTitle>
         <Paragraph>
-          리디렉션 URI는 OAuth 관리 페이지에서 변경할 수 있지만, 기존 사용자의 인증에 영향을 줄 수 있으므로 주의해서 변경하세요.
+          리디렉션 URI는 OAuth 관리 페이지에서 변경할 수 있지만, 기존 사용자의 인증에 영향을 줄 수
+          있으므로 주의해서 변경하세요.
         </Paragraph>
 
         <SubTitle>Q: 토큰 만료 오류는 어떻게 처리하나요?</SubTitle>
         <Paragraph>
-          API 요청에서 <InlineCode>TOKEN_EXPIRED</InlineCode> 오류가 발생하면 리프레시 토큰을 사용해 새 액세스 토큰을 요청하고, 성공하면 원래 요청을 재시도하세요.
+          API 요청에서 <InlineCode>TOKEN_EXPIRED</InlineCode> 오류가 발생하면 리프레시 토큰을 사용해
+          새 액세스 토큰을 요청하고, 성공하면 원래 요청을 재시도하세요.
         </Paragraph>
       </Section>
 
-      <hr style={{ margin: "3rem 0" }} />
+      <hr style={{ margin: '3rem 0' }} />
 
       <Paragraph>
-        이 가이드를 통해 미림마이스터고 OAuth 서비스 연동에 필요한 기본 정보를 제공했습니다. 
-        추가 질문이나 문제가 있으면 <Link href="mailto:mmhs.service@gmail.com">미림마이스터고 지원 서비스 팀</Link> 또는 <Link href="https://instagram.com/hyphen_team">하이픈 인스타</Link>로 문의하세요.
+        이 가이드를 통해 미림마이스터고 OAuth 서비스 연동에 필요한 기본 정보를 제공했습니다. 추가
+        질문이나 문제가 있으면{' '}
+        <Link href='mailto:mmhs.service@gmail.com'>미림마이스터고 지원 서비스 팀</Link> 또는{' '}
+        <Link href='https://instagram.com/hyphen_team'>하이픈 인스타</Link>로 문의하세요.
       </Paragraph>
     </DocsContainer>
   );

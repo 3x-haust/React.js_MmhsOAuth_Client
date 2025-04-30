@@ -1,11 +1,12 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import fs from 'fs'
-import path from 'path'
+import fs from 'fs';
+import path from 'path';
+
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   const isDevCommand = process.env.npm_lifecycle_event === 'dev';
-  
+
   const commonConfig = {
     plugins: [react()],
     resolve: {
@@ -13,7 +14,7 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, 'src'),
       },
     },
-  }
+  };
 
   if (isDevCommand) {
     return {

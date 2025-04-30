@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { NoticeService, Notice, UpdateNoticeRequest } from '@/features/notice/api/noticeService';
+
 import { useAuthStore } from '@/features/auth';
+import { NoticeService, Notice, UpdateNoticeRequest } from '@/features/notice/api/noticeService';
 import { NoticeForm } from '@/pages/notices/components/NoticeForm';
 
 const EditContainer = styled.div`
@@ -31,7 +32,7 @@ const LoadingSpinner = styled.div`
   justify-content: center;
   align-items: center;
   min-height: 200px;
-  
+
   &:after {
     content: '';
     width: 40px;
@@ -41,10 +42,14 @@ const LoadingSpinner = styled.div`
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
-  
+
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;
 
@@ -56,17 +61,17 @@ export const EditNoticePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (!user || !user.isAdmin) {
       navigate('/notices', { replace: true });
     }
   }, [user, navigate]);
-  
+
   useEffect(() => {
     const fetchNotice = async () => {
       if (!id) return;
-      
+
       try {
         setIsLoading(true);
         const data = await NoticeService.getNoticeById(parseInt(id, 10));
@@ -79,13 +84,13 @@ export const EditNoticePage: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchNotice();
   }, [id]);
-  
+
   const handleSubmit = async (data: UpdateNoticeRequest) => {
     if (!id) return;
-    
+
     try {
       setIsSaving(true);
       setError(null);
@@ -97,7 +102,7 @@ export const EditNoticePage: React.FC = () => {
       setIsSaving(false);
     }
   };
-  
+
   if (isLoading) {
     return (
       <>
@@ -108,32 +113,26 @@ export const EditNoticePage: React.FC = () => {
       </>
     );
   }
-  
+
   if (!notice) {
     return (
       <>
         <EditContainer>
           <PageTitle>공지사항 수정</PageTitle>
-          <ErrorMessage>
-            공지사항을 찾을 수 없거나 존재하지 않는 공지사항입니다.
-          </ErrorMessage>
+          <ErrorMessage>공지사항을 찾을 수 없거나 존재하지 않는 공지사항입니다.</ErrorMessage>
         </EditContainer>
       </>
     );
   }
-  
+
   return (
     <>
       <EditContainer>
         <PageTitle>공지사항 수정</PageTitle>
-        
+
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        
-        <NoticeForm 
-          initialData={notice}
-          onSubmit={handleSubmit}
-          isLoading={isSaving}
-        />
+
+        <NoticeForm initialData={notice} onSubmit={handleSubmit} isLoading={isSaving} />
       </EditContainer>
     </>
   );

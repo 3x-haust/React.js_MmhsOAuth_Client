@@ -1,11 +1,12 @@
-import { AuthResponse } from ".";
+import { AuthResponse } from '.';
+
 import { API_URL } from '@/shared/api/constants';
 
 export const verifyResetToken = async (token: string): Promise<AuthResponse> => {
   try {
     const response = await fetch(`${API_URL}/api/v1/auth/verify-reset-token/${token}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
 
     const data = await response.json();

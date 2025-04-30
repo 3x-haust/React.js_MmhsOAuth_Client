@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { Notice, NoticeService } from '@/features/notice/api/noticeService';
+
 import { useAuthStore } from '@/features/auth';
+import { Notice, NoticeService } from '@/features/notice/api/noticeService';
 
 const NoticesContainer = styled.div`
   max-width: 1000px;
@@ -26,9 +27,11 @@ const NoticeItem = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   cursor: pointer;
-  
+
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -55,10 +58,12 @@ const shimmer = `
 `;
 
 const SkeletonElement = styled.div`
-  background: linear-gradient(90deg, 
-    ${({ theme }) => theme.colors?.skeleton || '#f0f0f0'} 25%, 
-    ${({ theme }) => theme.colors?.skeletonHighlight || '#f8f8f8'} 50%, 
-    ${({ theme }) => theme.colors?.skeleton || '#f0f0f0'} 75%);
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors?.skeleton || '#f0f0f0'} 25%,
+    ${({ theme }) => theme.colors?.skeletonHighlight || '#f8f8f8'} 50%,
+    ${({ theme }) => theme.colors?.skeleton || '#f0f0f0'} 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 2s infinite linear;
   border-radius: 4px;
@@ -83,7 +88,7 @@ const SkeletonAuthor = styled(SkeletonElement)`
   margin-bottom: 0.75rem;
 `;
 
-const SkeletonText = styled(SkeletonElement)<{width?: string}>`
+const SkeletonText = styled(SkeletonElement)<{ width?: string }>`
   height: 1rem;
   margin-bottom: 0.5rem;
   width: ${props => props.width || '100%'};
@@ -159,7 +164,7 @@ const ActionButton = styled(Link)`
   transition: all 0.2s ease;
   z-index: 1;
   position: relative;
-  
+
   &:hover {
     background-color: ${({ theme }) => theme.colors?.primaryLight || '#EEF1FD'};
   }
@@ -178,7 +183,7 @@ const DeleteButton = styled.button`
   z-index: 1;
   position: relative;
   cursor: pointer;
-  
+
   &:hover {
     background-color: #fef0f0;
   }
@@ -200,11 +205,11 @@ const CreateButton = styled(Link)`
   font-weight: 500;
   text-decoration: none;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: ${({ theme }) => theme.colors?.primaryDark || '#4B6ED3'};
   }
-  
+
   &:before {
     content: '+';
     margin-right: 0.5rem;
@@ -258,7 +263,7 @@ const CancelButton = styled.button`
   background-color: transparent;
   border: 1px solid ${({ theme }) => theme.colors?.border || '#ddd'};
   cursor: pointer;
-  
+
   &:hover {
     background-color: ${({ theme }) => theme.colors?.background || '#f5f5f5'};
   }
@@ -272,7 +277,7 @@ const ConfirmDeleteButton = styled.button`
   background-color: ${({ theme }) => theme.colors?.error || '#e74c3c'};
   border: none;
   cursor: pointer;
-  
+
   &:hover {
     background-color: #c0392b;
   }
@@ -308,12 +313,12 @@ export const NoticesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [noticeToDelete, setNoticeToDelete] = useState<number | null>(null);
-  
+
   const isAdmin = user?.isAdmin === true;
-  
+
   useEffect(() => {
     const fetchNotices = async () => {
       try {
@@ -328,27 +333,27 @@ export const NoticesPage: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchNotices();
   }, [isAdmin]);
-  
+
   const handleNoticeClick = (noticeId: number) => {
     navigate(`/notices/${noticeId}`);
   };
-  
+
   const handleButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
-  
+
   const handleDeleteClick = (e: React.MouseEvent, noticeId: number) => {
     e.stopPropagation();
     setNoticeToDelete(noticeId);
     setIsDeleteModalOpen(true);
   };
-  
+
   const handleConfirmDelete = async () => {
     if (noticeToDelete === null) return;
-    
+
     try {
       await NoticeService.deleteNotice(noticeToDelete);
       setNotices(notices.filter(notice => notice.id !== noticeToDelete));
@@ -359,65 +364,65 @@ export const NoticesPage: React.FC = () => {
       setError('공지사항 삭제 중 오류가 발생했습니다.');
     }
   };
-  
+
   const handleCancelDelete = () => {
     setIsDeleteModalOpen(false);
     setNoticeToDelete(null);
   };
-  
+
   const renderSkeletons = () => {
-    return Array(3).fill(0).map((_, index) => (
-      <SkeletonItem key={`skeleton-${index}`}>
-        <SkeletonHeader>
-          <SkeletonTitle />
-          <SkeletonDate />
-        </SkeletonHeader>
-        <SkeletonAuthor />
-        <SkeletonText width="95%" />
-        <SkeletonText width="90%" />
-        <SkeletonText width="85%" />
-        {isAdmin && (
-          <SkeletonActions>
-            <SkeletonButton />
-          </SkeletonActions>
-        )}
-      </SkeletonItem>
-    ));
+    return Array(3)
+      .fill(0)
+      .map((_, index) => (
+        <SkeletonItem key={`skeleton-${index}`}>
+          <SkeletonHeader>
+            <SkeletonTitle />
+            <SkeletonDate />
+          </SkeletonHeader>
+          <SkeletonAuthor />
+          <SkeletonText width='95%' />
+          <SkeletonText width='90%' />
+          <SkeletonText width='85%' />
+          {isAdmin && (
+            <SkeletonActions>
+              <SkeletonButton />
+            </SkeletonActions>
+          )}
+        </SkeletonItem>
+      ));
   };
-  
+
   if (loading) {
     return (
       <>
         <NoticesContainer>
           <PageTitle>공지사항</PageTitle>
-          
+
           {isAdmin && (
             <AdminActions>
-              <CreateButton to="/notices/new">새 공지사항 작성</CreateButton>
+              <CreateButton to='/notices/new'>새 공지사항 작성</CreateButton>
             </AdminActions>
           )}
-          
-          <NoticesList>
-            {renderSkeletons()}
-          </NoticesList>
+
+          <NoticesList>{renderSkeletons()}</NoticesList>
         </NoticesContainer>
       </>
     );
   }
-  
+
   return (
     <>
       <NoticesContainer>
         <PageTitle>공지사항</PageTitle>
-        
+
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        
+
         {isAdmin && (
           <AdminActions>
-            <CreateButton to="/notices/new">새 공지사항 작성</CreateButton>
+            <CreateButton to='/notices/new'>새 공지사항 작성</CreateButton>
           </AdminActions>
         )}
-        
+
         <NoticesList>
           {notices.length === 0 ? (
             <NoNotices>
@@ -425,37 +430,23 @@ export const NoticesPage: React.FC = () => {
             </NoNotices>
           ) : (
             notices.map(notice => (
-              <NoticeItem 
-                key={notice.id} 
-                onClick={() => handleNoticeClick(notice.id)}
-              >
+              <NoticeItem key={notice.id} onClick={() => handleNoticeClick(notice.id)}>
                 <NoticeHeader>
                   <NoticeTitle>{notice.title}</NoticeTitle>
                   <NoticeDate>{formatDate(notice.createdAt)}</NoticeDate>
                 </NoticeHeader>
-                
-                {notice.author && (
-                  <NoticeAuthor>
-                    작성자: {notice.author.nickname}
-                  </NoticeAuthor>
-                )}
-                
-                <NoticePreview>
-                  {notice.content}
-                </NoticePreview>
-                
+
+                {notice.author && <NoticeAuthor>작성자: {notice.author.nickname}</NoticeAuthor>}
+
+                <NoticePreview>{notice.content}</NoticePreview>
+
                 <NoticeActions>
                   {isAdmin && (
                     <>
-                      <ActionButton 
-                        to={`/notices/${notice.id}/edit`} 
-                        onClick={handleButtonClick}
-                      >
+                      <ActionButton to={`/notices/${notice.id}/edit`} onClick={handleButtonClick}>
                         수정
                       </ActionButton>
-                      <DeleteButton 
-                        onClick={(e) => handleDeleteClick(e, notice.id)}
-                      >
+                      <DeleteButton onClick={e => handleDeleteClick(e, notice.id)}>
                         삭제
                       </DeleteButton>
                     </>
@@ -465,14 +456,14 @@ export const NoticesPage: React.FC = () => {
             ))
           )}
         </NoticesList>
-        <div 
-          style={{ 
+        <div
+          style={{
             marginBottom: 'clamp(450px, 30vw, 650px)',
-            width: '100%'
+            width: '100%',
           }}
         />
       </NoticesContainer>
-      
+
       {isDeleteModalOpen && (
         <ModalOverlay>
           <ModalContent>

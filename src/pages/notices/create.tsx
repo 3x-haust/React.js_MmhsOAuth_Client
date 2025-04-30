@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { NoticeService, CreateNoticeRequest, UpdateNoticeRequest } from '@/features/notice/api/noticeService';
+
 import { useAuthStore } from '@/features/auth';
+import {
+  NoticeService,
+  CreateNoticeRequest,
+  UpdateNoticeRequest,
+} from '@/features/notice/api/noticeService';
 import { NoticeForm } from '@/pages/notices/components/NoticeForm';
 
 const CreateContainer = styled.div`
@@ -31,13 +36,13 @@ export const CreateNoticePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (!user || !user.isAdmin) {
       navigate('/notices', { replace: true });
     }
   }, [user, navigate]);
-  
+
   const handleSubmit = async (data: CreateNoticeRequest | UpdateNoticeRequest) => {
     try {
       setIsLoading(true);
@@ -50,18 +55,15 @@ export const CreateNoticePage: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <>
       <CreateContainer>
         <PageTitle>새 공지사항 작성</PageTitle>
-        
+
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        
-        <NoticeForm 
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-        />
+
+        <NoticeForm onSubmit={handleSubmit} isLoading={isLoading} />
       </CreateContainer>
     </>
   );

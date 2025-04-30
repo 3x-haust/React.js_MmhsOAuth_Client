@@ -1,22 +1,24 @@
-import { Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
-import { LoginPage } from '@/pages/login'
-import { NotFoundPage } from '@/pages/notfound'
-import { OAuthCallback } from '@/pages/oauth'
-import { HomePage } from '@/pages/home'
-import { ConsentPage } from '@/pages/oauth/consent'
-import { ManageOAuthAppsPage } from '@/pages/oauth/manage'
-import { NewOAuthAppPage } from '@/pages/oauth/new'
-import { EditOAuthAppPage } from '@/pages/oauth/edit'
-import { DocsPage } from '../pages/docs'
-import { NoticesPage, NoticeDetailPage, CreateNoticePage, EditNoticePage } from '@/pages/notices'
-import { AdminDashboardPage, UserManagementPage, UserEditPage } from '@/pages/admin'
-import { ProfilePage } from '@/pages/profile'
-import ResetPasswordPage from '@/pages/reset-password'
-import { useAuthStore } from '@/features/auth'
-import { Footer, Header } from '@/widgets'
-import { ThemeProvider } from 'styled-components'
-import { theme } from '@/app/styles'
+import { useEffect } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
+
+import { DocsPage } from '../pages/docs';
+
+import { theme } from '@/app/styles';
+import { useAuthStore } from '@/features/auth';
+import { AdminDashboardPage, UserManagementPage, UserEditPage } from '@/pages/admin';
+import { HomePage } from '@/pages/home';
+import { LoginPage } from '@/pages/login';
+import { NotFoundPage } from '@/pages/notfound';
+import { NoticesPage, NoticeDetailPage, CreateNoticePage, EditNoticePage } from '@/pages/notices';
+import { OAuthCallback } from '@/pages/oauth';
+import { ConsentPage } from '@/pages/oauth/consent';
+import { EditOAuthAppPage } from '@/pages/oauth/edit';
+import { ManageOAuthAppsPage } from '@/pages/oauth/manage';
+import { NewOAuthAppPage } from '@/pages/oauth/new';
+import { ProfilePage } from '@/pages/profile';
+import ResetPasswordPage from '@/pages/reset-password';
+import { Footer, Header } from '@/widgets';
 
 const getPageName = (path: string): string => {
   const pathMap: Record<string, string> = {
@@ -27,7 +29,7 @@ const getPageName = (path: string): string => {
     '/oauth/manage': 'OAuth 앱 관리',
     '/admin': '관리자 대시보드',
     '/admin/users': '사용자 관리',
-    '/profile': '마이페이지'
+    '/profile': '마이페이지',
   };
 
   for (const [key, value] of Object.entries(pathMap)) {
@@ -50,21 +52,21 @@ const getPageName = (path: string): string => {
 const saveRecentPage = (path: string) => {
   try {
     if (path === '*' || path === '/login') return;
-    
+
     const pathName = getPageName(path);
     const recentPagesStr = localStorage.getItem('recentPages');
-    let recentPages: {path: string, name: string}[] = [];
-    
+    let recentPages: { path: string; name: string }[] = [];
+
     if (recentPagesStr) {
       recentPages = JSON.parse(recentPagesStr);
     }
-    
+
     recentPages = recentPages.filter(page => page.path !== path);
-    
-    recentPages.unshift({path, name: pathName});
-    
+
+    recentPages.unshift({ path, name: pathName });
+
     recentPages = recentPages.slice(0, 10);
-    
+
     localStorage.setItem('recentPages', JSON.stringify(recentPages));
   } catch (error) {
     console.error('Failed to save recent pages:', error);
@@ -72,18 +74,18 @@ const saveRecentPage = (path: string) => {
 };
 
 function App() {
-  const { initializeAuth } = useAuthStore()
-  const location = useLocation()
+  const { initializeAuth } = useAuthStore();
+  const location = useLocation();
 
   useEffect(() => {
-    initializeAuth()
-  }, [initializeAuth])
+    initializeAuth();
+  }, [initializeAuth]);
 
   useEffect(() => {
     saveRecentPage(location.pathname);
   }, [location.pathname]);
 
-  const showHeaderFooter = location.pathname !== '/login'
+  const showHeaderFooter = location.pathname !== '/login';
 
   return (
     <>
@@ -107,13 +109,13 @@ function App() {
           <Route path='/admin/users/:id/edit' element={<UserEditPage />} />
           <Route path='/profile' element={<ProfilePage />} />
           <Route path='/reset-password/:token' element={<ResetPasswordPage />} />
-          
+
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
         {showHeaderFooter && <Footer />}
       </ThemeProvider>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

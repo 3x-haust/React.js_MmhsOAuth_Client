@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+
 import { useAuthStore } from '@/features/auth';
 
 const Container = styled.div`
@@ -27,9 +28,11 @@ const Card = styled.div`
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   cursor: pointer;
-  
+
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -58,7 +61,7 @@ const CardFooter = styled.div`
 export function AdminDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  
+
   useEffect(() => {
     if (user && !user.isAdmin) {
       navigate('/');
@@ -76,7 +79,7 @@ export function AdminDashboardPage() {
   return (
     <Container>
       <Title>관리자 대시보드</Title>
-      
+
       <Cards>
         {adminPages.map((page, index) => (
           <Card key={index} onClick={() => navigate(page.link)}>

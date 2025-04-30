@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
+import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+
 import { theme } from '@/app/styles/index';
 import { verifyResetToken, resetPasswordWithToken } from '@/features/auth/api';
 
@@ -56,7 +57,7 @@ const Input = styled.input`
   border: 1px solid ${({ theme }) => theme.colors?.border || '#ddd'};
   border-radius: 4px;
   font-size: 1rem;
-  
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.primary};
@@ -74,11 +75,11 @@ const Button = styled.button`
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: ${({ theme }) => theme.primaryDark};
   }
-  
+
   &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
@@ -96,28 +97,41 @@ const Message = styled.div<MessageProps>`
   margin-bottom: 1rem;
   background-color: ${props => {
     switch (props.$type) {
-      case 'error': return '#ffebee';
-      case 'success': return '#e8f5e9';
-      case 'info': return '#e3f2fd';
-      default: return '#e3f2fd';
+      case 'error':
+        return '#ffebee';
+      case 'success':
+        return '#e8f5e9';
+      case 'info':
+        return '#e3f2fd';
+      default:
+        return '#e3f2fd';
     }
   }};
   color: ${props => {
     switch (props.$type) {
-      case 'error': return '#c62828';
-      case 'success': return '#2e7d32';
-      case 'info': return '#1565c0';
-      default: return '#1565c0';
+      case 'error':
+        return '#c62828';
+      case 'success':
+        return '#2e7d32';
+      case 'info':
+        return '#1565c0';
+      default:
+        return '#1565c0';
     }
   }};
-  border: 1px solid ${props => {
-    switch (props.$type) {
-      case 'error': return '#ef9a9a';
-      case 'success': return '#a5d6a7';
-      case 'info': return '#90caf9';
-      default: return '#90caf9';
-    }
-  }};
+  border: 1px solid
+    ${props => {
+      switch (props.$type) {
+        case 'error':
+          return '#ef9a9a';
+        case 'success':
+          return '#a5d6a7';
+        case 'info':
+          return '#90caf9';
+        default:
+          return '#90caf9';
+      }
+    }};
 `;
 
 export const ResetPasswordPage: React.FC = () => {
@@ -128,7 +142,10 @@ export const ResetPasswordPage: React.FC = () => {
   const [isValid, setIsValid] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isTokenValid, setIsTokenValid] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null);
+  const [message, setMessage] = useState<{
+    text: string;
+    type: 'error' | 'success' | 'info';
+  } | null>(null);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -165,7 +182,7 @@ export const ResetPasswordPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!token || !isTokenValid || !isValid) {
       return;
     }
@@ -177,13 +194,12 @@ export const ResetPasswordPage: React.FC = () => {
       await resetPasswordWithToken(token, newPassword);
       setMessage({
         text: '비밀번호가 성공적으로 변경되었습니다. 몇 초 후 로그인 페이지로 이동합니다.',
-        type: 'success'
+        type: 'success',
       });
 
       setTimeout(() => {
         navigate('/login');
       }, 3000);
-
     } catch (error) {
       if (error instanceof Error) {
         setMessage({ text: error.message, type: 'error' });
@@ -211,34 +227,34 @@ export const ResetPasswordPage: React.FC = () => {
       <PageContainer>
         <ContentWrapper>
           <Title>비밀번호 재설정</Title>
-          
+
           {message && <Message $type={message.type}>{message.text}</Message>}
-          
+
           {isLoading ? (
             <div style={{ textAlign: 'center' }}>로딩중...</div>
           ) : isTokenValid ? (
             <Form onSubmit={handleSubmit}>
               <FormGroup>
-                <Label htmlFor="new-password">새 비밀번호</Label>
+                <Label htmlFor='new-password'>새 비밀번호</Label>
                 <Input
-                  id="new-password"
-                  type="password"
+                  id='new-password'
+                  type='password'
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="새 비밀번호 (8자 이상)"
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder='새 비밀번호 (8자 이상)'
                   required
                   minLength={8}
                 />
               </FormGroup>
-              
+
               <FormGroup>
-                <Label htmlFor="confirm-password">비밀번호 확인</Label>
+                <Label htmlFor='confirm-password'>비밀번호 확인</Label>
                 <Input
-                  id="confirm-password"
-                  type="password"
+                  id='confirm-password'
+                  type='password'
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="비밀번호 확인"
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder='비밀번호 확인'
                   required
                 />
                 {confirmPassword && newPassword !== confirmPassword && (
@@ -247,17 +263,18 @@ export const ResetPasswordPage: React.FC = () => {
                   </span>
                 )}
               </FormGroup>
-              
-              <Button type="submit" disabled={!isValid || isLoading}>
+
+              <Button type='submit' disabled={!isValid || isLoading}>
                 {isLoading ? '처리중...' : '비밀번호 변경하기'}
               </Button>
             </Form>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <Button onClick={handleRequestNewReset}>
-                비밀번호 재설정 다시 요청하기
-              </Button>
-              <Button onClick={handleGoToLogin} style={{ backgroundColor: '#f5f5f5', color: theme.primary }}>
+              <Button onClick={handleRequestNewReset}>비밀번호 재설정 다시 요청하기</Button>
+              <Button
+                onClick={handleGoToLogin}
+                style={{ backgroundColor: '#f5f5f5', color: theme.primary }}
+              >
                 로그인 페이지로 이동
               </Button>
             </div>

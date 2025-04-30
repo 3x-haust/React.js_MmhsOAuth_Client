@@ -1,12 +1,11 @@
-import { AuthResponse } from ".";
+import { AuthResponse } from '.';
+
 import { API_URL } from '@/shared/api/constants';
 
-
-export const logOut = async (
-): Promise<AuthResponse> => {
+export const logOut = async (): Promise<AuthResponse> => {
   const response = await fetch(`${API_URL}/api/v1/auth/logout`, {
     method: 'POST',
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
     },
     credentials: 'include',

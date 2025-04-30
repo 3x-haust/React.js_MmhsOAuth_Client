@@ -1,6 +1,6 @@
-import { API_URL } from '@/shared/api/constants';
 import { executeWithTokenRefresh } from '@/features/auth/api/authService';
 import { User } from '@/features/auth/hooks';
+import { API_URL } from '@/shared/api/constants';
 
 export interface UpdateProfileRequest {
   email?: string;
@@ -52,8 +52,10 @@ export interface RevokeApplicationResponse {
   data?: { clientId: string };
 }
 
-export const updateProfile = async (profileData: UpdateProfileRequest): Promise<ProfileResponse> => {
-  return executeWithTokenRefresh(async (token) => {
+export const updateProfile = async (
+  profileData: UpdateProfileRequest
+): Promise<ProfileResponse> => {
+  return executeWithTokenRefresh(async token => {
     if (!token) {
       return {
         status: 401,
@@ -61,30 +63,27 @@ export const updateProfile = async (profileData: UpdateProfileRequest): Promise<
       };
     }
 
-    const response = await fetch(
-      `${API_URL}/api/v1/user/profile`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(profileData),
-      }
-    );
+    const response = await fetch(`${API_URL}/api/v1/user/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(profileData),
+    });
 
     const data = await response.json();
-    
+
     if (data.message === 'TOKEN_EXPIRED') {
       throw new Error('TOKEN_EXPIRED');
     }
-    
+
     return data;
   });
 };
 
 export const getConnectedApplications = async (): Promise<ApplicationsResponse> => {
-  return executeWithTokenRefresh(async (token) => {
+  return executeWithTokenRefresh(async token => {
     if (!token) {
       return {
         status: 401,
@@ -92,29 +91,26 @@ export const getConnectedApplications = async (): Promise<ApplicationsResponse> 
       };
     }
 
-    const response = await fetch(
-      `${API_URL}/api/v1/user/applications`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${API_URL}/api/v1/user/applications`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-    const data = await response.json();    
-    
+    const data = await response.json();
+
     if (data.message === 'TOKEN_EXPIRED') {
       throw new Error('TOKEN_EXPIRED');
     }
-    
+
     return data;
   });
 };
 
 export const revokeApplication = async (clientId: string): Promise<RevokeApplicationResponse> => {
-  return executeWithTokenRefresh(async (token) => {
+  return executeWithTokenRefresh(async token => {
     if (!token) {
       return {
         status: 401,
@@ -122,29 +118,26 @@ export const revokeApplication = async (clientId: string): Promise<RevokeApplica
       };
     }
 
-    const response = await fetch(
-      `${API_URL}/api/v1/user/applications/${clientId}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${API_URL}/api/v1/user/applications/${clientId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     const data = await response.json();
-    
+
     if (data.message === 'TOKEN_EXPIRED') {
       throw new Error('TOKEN_EXPIRED');
     }
-    
+
     return data;
   });
 };
 
 export const getPermissionsHistory = async (): Promise<PermissionsHistoryResponse> => {
-  return executeWithTokenRefresh(async (token) => {
+  return executeWithTokenRefresh(async token => {
     if (!token) {
       return {
         status: 401,
@@ -152,23 +145,20 @@ export const getPermissionsHistory = async (): Promise<PermissionsHistoryRespons
       };
     }
 
-    const response = await fetch(
-      `${API_URL}/api/v1/user/permissions-history`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${API_URL}/api/v1/user/permissions-history`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     const data = await response.json();
-    
+
     if (data.message === 'TOKEN_EXPIRED') {
       throw new Error('TOKEN_EXPIRED');
     }
-    
+
     return data;
   });
 };

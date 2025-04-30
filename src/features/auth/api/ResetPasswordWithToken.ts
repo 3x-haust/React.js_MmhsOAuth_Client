@@ -1,12 +1,16 @@
-import { AuthResponse } from ".";
+import { AuthResponse } from '.';
+
 import { API_URL } from '@/shared/api/constants';
 
-export const resetPasswordWithToken = async (token: string, newPassword: string): Promise<AuthResponse> => {
+export const resetPasswordWithToken = async (
+  token: string,
+  newPassword: string
+): Promise<AuthResponse> => {
   try {
     const response = await fetch(`${API_URL}/api/v1/auth/reset-password-with-token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, newPassword })
+      body: JSON.stringify({ token, newPassword }),
     });
 
     const data = await response.json();

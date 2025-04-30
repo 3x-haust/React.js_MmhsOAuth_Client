@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import { useAuthStore } from "@/features/auth";
-import { AuthModalWrapper } from "@/widgets";
+import { Link, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+import { useAuthStore } from '@/features/auth';
 import { Notice, NoticeService } from '@/features/notice/api/noticeService';
+import { AuthModalWrapper } from '@/widgets';
 
 const HomeContainer = styled.div`
   max-width: 1200px;
@@ -106,7 +107,7 @@ const NoticeList = styled.div`
 const NoticeItem = styled.div`
   padding: 12px 0;
   border-bottom: 1px solid ${({ theme }) => theme.colors?.border || '#eee'};
-  
+
   &:last-child {
     border-bottom: none;
   }
@@ -121,7 +122,7 @@ const NoticeTitle = styled.h3`
 const NoticeLink = styled(Link)`
   color: ${({ theme }) => theme.colors?.text || '#333'};
   text-decoration: none;
-  
+
   &:hover {
     color: ${({ theme }) => theme.colors?.primary || '#5E81F4'};
   }
@@ -138,7 +139,7 @@ const ViewAllLink = styled(Link)`
   color: ${({ theme }) => theme.colors?.primary || '#5E81F4'};
   text-decoration: none;
   font-weight: 500;
-  
+
   &:hover {
     text-decoration: underline;
   }
@@ -213,12 +214,10 @@ export const HomePage = () => {
             {loading ? (
               <div>공지사항 로딩 중...</div>
             ) : recentNotices.length > 0 ? (
-              recentNotices.map((notice) => (
+              recentNotices.map(notice => (
                 <NoticeItem key={notice.id}>
                   <NoticeTitle>
-                    <NoticeLink to={`/notices/${notice.id}`}>
-                      {notice.title}
-                    </NoticeLink>
+                    <NoticeLink to={`/notices/${notice.id}`}>{notice.title}</NoticeLink>
                   </NoticeTitle>
                   <NoticeDate>{formatDate(notice.createdAt)}</NoticeDate>
                 </NoticeItem>
@@ -227,10 +226,10 @@ export const HomePage = () => {
               <NoNotices>등록된 공지사항이 없습니다.</NoNotices>
             )}
           </NoticeList>
-          <ViewAllLink to="/notices">모든 공지사항 보기 →</ViewAllLink>
+          <ViewAllLink to='/notices'>모든 공지사항 보기 →</ViewAllLink>
         </RecentNoticesSection>
       </HomeContainer>
-      
+
       <AuthModalWrapper />
     </>
   );

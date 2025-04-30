@@ -1,5 +1,6 @@
-import { API_URL } from '@/shared/api/constants';
 import Cookies from 'js-cookie';
+
+import { API_URL } from '@/shared/api/constants';
 
 export interface LoginRequest {
   email: string;
@@ -57,7 +58,7 @@ export const refreshTokens = async (): Promise<string | null> => {
     });
 
     const result = await response.json();
-    
+
     if (result.status === 200 && result.data?.accessToken) {
       Cookies.set('accessToken', result.data.accessToken, { secure: true, sameSite: 'Strict' });
       return result.data.accessToken;
@@ -96,9 +97,9 @@ export const AuthService = {
       credentials: 'include',
       body: JSON.stringify(loginRequest),
     });
-    
-    const result = await response.json() as ApiResponse<AuthResponse>;
-    
+
+    const result = (await response.json()) as ApiResponse<AuthResponse>;
+
     if (response.ok) {
       const { accessToken } = result.data;
       if (accessToken) {
@@ -106,10 +107,10 @@ export const AuthService = {
       }
       return result.data;
     }
-    
+
     throw new Error(result.message || 'Login failed');
   },
-  
+
   async register(registerRequest: RegisterRequest): Promise<void> {
     const response = await fetch(`${API_URL}/api/v1/auth/register`, {
       method: 'POST',
@@ -118,26 +119,26 @@ export const AuthService = {
       },
       body: JSON.stringify(registerRequest),
     });
-    
+
     const result = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(result.message || 'Registration failed');
     }
   },
-  
+
   async logout(): Promise<void> {
     const refreshToken = Cookies.get('refreshToken');
-    
+
     try {
-      await executeWithTokenRefresh(async (token) => {
+      await executeWithTokenRefresh(async token => {
         if (!token) return;
-        
+
         await fetch(`${API_URL}/api/v1/auth/logout`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
           credentials: 'include',
           body: JSON.stringify({ refreshToken }),
@@ -148,33 +149,33 @@ export const AuthService = {
       Cookies.remove('refreshToken');
     }
   },
-  
+
   async getCurrentUser(): Promise<User> {
-    return executeWithTokenRefresh(async (token) => {
+    return executeWithTokenRefresh(async token => {
       if (!token) throw new Error('Authentication required');
-      
+
       const response = await fetch(`${API_URL}/api/v1/user`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
-      
-      const result = await response.json() as ApiResponse<User>;
-      
+
+      const result = (await response.json()) as ApiResponse<User>;
+
       if (response.ok) {
         return result.data;
       }
-      
+
       if (result.message === 'TOKEN_EXPIRED') {
         throw new Error('TOKEN_EXPIRED');
       }
-      
+
       throw new Error(result.message || 'Failed to fetch user data');
     });
   },
-  
+
   async refreshTokens(): Promise<string | null> {
     return refreshTokens();
-  }
+  },
 };

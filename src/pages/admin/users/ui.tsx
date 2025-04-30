@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { User } from '@/features/auth/hooks';
+
 import { getAllUsers, deleteUser } from '@/features/admin/api/userAdmin';
 import { useAuthStore } from '@/features/auth';
+import { User } from '@/features/auth/hooks';
 
 const Container = styled.div`
   max-width: 1200px;
@@ -42,14 +43,15 @@ const Tr = styled.tr`
   &:nth-child(even) {
     background-color: #f8f9fa;
   }
-  
+
   &:hover {
     background-color: #f1f3f5;
   }
 `;
 
 const ActionButton = styled.button<{ variant?: 'edit' | 'delete' }>`
-  background-color: ${props => props.variant === 'delete' ? '#dc3545' : props.variant === 'edit' ? '#0d6efd' : '#6c757d'};
+  background-color: ${props =>
+    props.variant === 'delete' ? '#dc3545' : props.variant === 'edit' ? '#0d6efd' : '#6c757d'};
   color: white;
   border: none;
   border-radius: 4px;
@@ -57,9 +59,10 @@ const ActionButton = styled.button<{ variant?: 'edit' | 'delete' }>`
   cursor: pointer;
   margin-right: 8px;
   transition: background-color 0.2s;
-  
+
   &:hover {
-    background-color: ${props => props.variant === 'delete' ? '#bd2130' : props.variant === 'edit' ? '#0b5ed7' : '#5a6268'};
+    background-color: ${props =>
+      props.variant === 'delete' ? '#bd2130' : props.variant === 'edit' ? '#0b5ed7' : '#5a6268'};
   }
 `;
 
@@ -103,7 +106,7 @@ export function UserManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  
+
   useEffect(() => {
     if (user && !user.isAdmin) {
       navigate('/');
@@ -115,7 +118,7 @@ export function UserManagementPage() {
       try {
         setLoading(true);
         const response = await getAllUsers();
-        
+
         if (response.status === 200 && response.data) {
           setUsers(response.data as User[]);
         } else {
@@ -151,24 +154,35 @@ export function UserManagementPage() {
     navigate(`/admin/users/${userId}/edit`);
   };
 
-  const filteredUsers = users.filter((user) => 
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.nickname.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    user =>
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.nickname.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <Container><p>로딩 중...</p></Container>;
-  if (error) return <Container><p>오류: {error}</p></Container>;
+  if (loading)
+    return (
+      <Container>
+        <p>로딩 중...</p>
+      </Container>
+    );
+  if (error)
+    return (
+      <Container>
+        <p>오류: {error}</p>
+      </Container>
+    );
 
   return (
     <Container>
       <Title>사용자 관리</Title>
-      
+
       <FilterContainer>
-        <SearchInput 
-          type="text" 
-          placeholder="이메일 또는 닉네임으로 검색" 
+        <SearchInput
+          type='text'
+          placeholder='이메일 또는 닉네임으로 검색'
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={e => setSearchTerm(e.target.value)}
         />
       </FilterContainer>
 
@@ -193,9 +207,13 @@ export function UserManagementPage() {
               <Td>{user.nickname}</Td>
               <Td>{user.role === 'student' ? '학생' : '교사'}</Td>
               <Td>
-                {user.major === 'software' ? '소프트웨어' : 
-                 user.major === 'design' ? '디자인' : 
-                 user.major === 'web' ? '웹' : '-'}
+                {user.major === 'software'
+                  ? '소프트웨어'
+                  : user.major === 'design'
+                    ? '디자인'
+                    : user.major === 'web'
+                      ? '웹'
+                      : '-'}
               </Td>
               <Td>{user.admission || '-'}</Td>
               <Td>
@@ -204,10 +222,10 @@ export function UserManagementPage() {
               </Td>
               <Td>
                 <ButtonGroup>
-                  <ActionButton variant="edit" onClick={() => handleEdit(user.id)}>
+                  <ActionButton variant='edit' onClick={() => handleEdit(user.id)}>
                     수정
                   </ActionButton>
-                  <ActionButton variant="delete" onClick={() => handleDelete(user.id)}>
+                  <ActionButton variant='delete' onClick={() => handleDelete(user.id)}>
                     삭제
                   </ActionButton>
                 </ButtonGroup>

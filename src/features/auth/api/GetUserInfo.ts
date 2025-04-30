@@ -1,6 +1,7 @@
+import Cookies from 'js-cookie';
+
 import { User } from '@/features/auth/hooks';
 import { API_URL } from '@/shared/api/constants';
-import Cookies from 'js-cookie';
 
 export interface GetUserInfoResponse {
   status: number;
@@ -11,7 +12,7 @@ export interface GetUserInfoResponse {
 export const getUserInfo = async (token?: string): Promise<GetUserInfoResponse> => {
   try {
     const accessToken = token || Cookies.get('accessToken');
-    
+
     if (!accessToken) {
       return {
         status: 401,
@@ -19,16 +20,13 @@ export const getUserInfo = async (token?: string): Promise<GetUserInfoResponse> 
       };
     }
 
-    const response = await fetch(
-      `${API_URL}/api/v1/user`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await fetch(`${API_URL}/api/v1/user`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     const data = await response.json();
     return data;
