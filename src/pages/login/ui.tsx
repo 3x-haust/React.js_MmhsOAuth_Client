@@ -176,6 +176,7 @@ export const LoginPage = () => {
         email: formData.email.trim() !== '' && isValidEmail(formData.email),
         nickname: true,
         password: true,
+        code: true,
       };
     }
 
@@ -430,7 +431,7 @@ export const LoginPage = () => {
             </ValidationMessage>
 
             <Button type='submit' $disabled={!fieldValidity.email || loading}>
-              {loading ? '처리 중...' : '비밀번호 재설정 링크 요청'}
+              {loading ? '처리 중...' : '비밀번호 찾기'}
             </Button>
           </>
         );
@@ -502,7 +503,7 @@ export const LoginPage = () => {
       case 'findNickname':
         return '닉네임 찾기';
       case 'resetPassword':
-        return '비밀번호 재설정';
+        return '비밀번호 찾기';
       default:
         return '';
     }

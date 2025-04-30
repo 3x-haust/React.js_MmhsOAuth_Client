@@ -211,7 +211,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
           nickname: true,
           password: true,
           code: true,
-          newPassword: formData.newPassword.trim().length >= 8,
+          newPassword: true,
         };
       default:
         return {

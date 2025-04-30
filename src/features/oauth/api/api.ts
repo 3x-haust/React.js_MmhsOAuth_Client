@@ -70,7 +70,6 @@ export const getClientInfo = async (clientId: string) => {
       },
     }
   );
-
   return await res.json();
 };
 
