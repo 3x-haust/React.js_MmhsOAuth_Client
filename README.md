@@ -14,8 +14,11 @@
     <a href="https://github.com/3x-haust/Nest.js_MmhsOAuth_Example">
       <img src="https://img.shields.io/badge/GitHub-Example-FFB833?style=flat-square&logo=github" alt="GitHub Example" />
     </a>
-    <img src="https://img.shields.io/badge/React-18.x-61DAFB?style=flat-square&logo=react" alt="React" />
-    <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript" alt="TypeScript" />
+    <a href="https://github.com/3x-haust/Flutter_MmhsOAuth_Library">
+      <img src="https://img.shields.io/badge/GitHub-Library-4B32C3?style=flat-square&logo=github" alt="GitHub Library" />
+    </a>
+    <img src="https://img.shields.io/badge/React-18.x-000000?style=flat-square&logo=react" alt="React" />
+    <img src="https://img.shields.io/badge/TypeScript-5.x-000000?style=flat-square&logo=typescript" alt="TypeScript" />
   </p>
 </div>
 
