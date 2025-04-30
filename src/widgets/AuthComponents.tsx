@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { AuthModal } from "../features/auth/user";
-import { useAuthStore } from "../features/auth";
+import { AuthModal } from "@/features/auth/user";
+import { useAuthStore } from "@/features/auth";
 
 export const AuthModalWrapper: React.FC = () => {
   const { isLoggedIn, initializeAuth, isAuthModalOpen, setIsAuthModalOpen } = useAuthStore();

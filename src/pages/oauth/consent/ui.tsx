@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { useAuthStore } from "../../../features/auth";
+import { useAuthStore } from "@/features/auth";
 import Cookies from "js-cookie";
 
 interface ClientInfo {

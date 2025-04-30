@@ -1,6 +1,6 @@
-import { API_URL } from '../../../shared/api/constants';
+import { API_URL } from '@/shared/api/constants';
 import { User } from '../../auth/hooks';
-import { executeWithTokenRefresh } from '../../auth/api/authService';
+import { executeWithTokenRefresh } from '@/features/auth/api/authService';
 
 export interface AdminUserResponse {
   status: number;

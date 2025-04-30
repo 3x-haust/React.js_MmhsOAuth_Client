@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Notice, NoticeService } from '../../features/notice/api/noticeService';
-import { useAuthStore } from '../../features/auth';
+import { Notice, NoticeService } from '@/features/notice/api/noticeService';
+import { useAuthStore } from '@/features/auth';
 
 const DetailContainer = styled.div`
   max-width: 900px;

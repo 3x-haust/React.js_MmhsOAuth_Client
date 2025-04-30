@@ -1,35 +1,40 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import fs from 'fs'
+import path from 'path'
 
-// https://vite.dev/config/
 export default defineConfig(() => {
   const isDevCommand = process.env.npm_lifecycle_event === 'dev';
   
-  let config;
+  const commonConfig = {
+    plugins: [react()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+      },
+    },
+  }
 
   if (isDevCommand) {
-    config = {
-      plugins: [react()],
+    return {
+      ...commonConfig,
       server: {
         https: {
           key: fs.readFileSync('./localhost-key.pem'),
           cert: fs.readFileSync('./localhost.pem'),
         },
         host: 'localhost',
-        port: 5173
+        port: 5173,
       },
     };
   } else {
-    config = {
-      plugins: [react()],
+    return {
+      ...commonConfig,
       server: {
-      host: 'localhost',
-      port: 5173,
-      allowedHosts: ['auth.mmhs.app']
+        host: 'localhost',
+        port: 5173,
+        allowedHosts: ['auth.mmhs.app'],
       },
     };
   }
-
-  return config;
 });

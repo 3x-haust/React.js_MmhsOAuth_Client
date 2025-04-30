@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useAuthStore } from '../../features/auth';
+import { useAuthStore } from '@/features/auth';
 
 const Container = styled.div`
   max-width: 1200px;

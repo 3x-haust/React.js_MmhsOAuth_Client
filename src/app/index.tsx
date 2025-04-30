@@ -1,21 +1,22 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
-import { LoginPage } from '../pages/login'
-import { NotFoundPage } from '../pages/notfound'
-import { OAuthCallback } from '../pages/oauth'
-import { HomePage } from '../pages/home'
-import { ConsentPage } from '../pages/oauth/consent'
-import { ManageOAuthAppsPage } from '../pages/oauth/manage'
-import { NewOAuthAppPage } from '../pages/oauth/new'
-import { EditOAuthAppPage } from '../pages/oauth/edit'
+import { LoginPage } from '@/pages/login'
+import { NotFoundPage } from '@/pages/notfound'
+import { OAuthCallback } from '@/pages/oauth'
+import { HomePage } from '@/pages/home'
+import { ConsentPage } from '@/pages/oauth/consent'
+import { ManageOAuthAppsPage } from '@/pages/oauth/manage'
+import { NewOAuthAppPage } from '@/pages/oauth/new'
+import { EditOAuthAppPage } from '@/pages/oauth/edit'
 import { DocsPage } from '../pages/docs'
-import { NoticesPage, NoticeDetailPage, CreateNoticePage, EditNoticePage } from '../pages/notices'
-import { AdminDashboardPage, UserManagementPage, UserEditPage } from '../pages/admin'
-import { ProfilePage } from '../pages/profile'
-import { useAuthStore } from '../features/auth'
-import { Footer, Header } from '../widgets'
+import { NoticesPage, NoticeDetailPage, CreateNoticePage, EditNoticePage } from '@/pages/notices'
+import { AdminDashboardPage, UserManagementPage, UserEditPage } from '@/pages/admin'
+import { ProfilePage } from '@/pages/profile'
+import ResetPasswordPage from '@/pages/reset-password'
+import { useAuthStore } from '@/features/auth'
+import { Footer, Header } from '@/widgets'
 import { ThemeProvider } from 'styled-components'
-import { theme } from './styles'
+import { theme } from '@/app/styles'
 
 const getPageName = (path: string): string => {
   const pathMap: Record<string, string> = {
@@ -105,6 +106,7 @@ function App() {
           <Route path='/admin/users' element={<UserManagementPage />} />
           <Route path='/admin/users/:id/edit' element={<UserEditPage />} />
           <Route path='/profile' element={<ProfilePage />} />
+          <Route path='/reset-password/:token' element={<ResetPasswordPage />} />
           
           <Route path='*' element={<NotFoundPage />} />
         </Routes>

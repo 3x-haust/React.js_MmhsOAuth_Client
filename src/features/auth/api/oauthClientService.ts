@@ -1,4 +1,4 @@
-import { API_URL } from '../../../shared/api/constants';
+import { API_URL } from '@/shared/api/constants';
 import { executeWithTokenRefresh } from './authService';
 
 export interface OAuthClient {

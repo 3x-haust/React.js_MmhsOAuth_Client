@@ -1,8 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { styled } from "styled-components";
-import { theme } from "../../../app/styles";
-import { useAuthStore } from '../hooks';
-import { logIn, sendVerificationCode, signUp, getUserInfo } from '../api';
+import { theme } from "@/app/styles";
+import { useAuthStore } from '@/features/auth/hooks';
+import { 
+  logIn, 
+  sendVerificationCode, 
+  signUp, 
+  getUserInfo,
+  requestPasswordReset,
+  findNickname
+} from '../api';
 
 const ModalOverlay = styled.div<{ $isOpen: boolean }>`
   display: ${props => props.$isOpen ? 'flex' : 'none'};
@@ -98,6 +105,24 @@ const Timer = styled.span`
   color: ${theme.primary};
 `;
 
+const BackButton = styled.button`
+  background: none;
+  border: none;
+  color: ${theme.primary};
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+`;
+
+const modes = {
+  LOGIN: 'login',
+  SIGNUP: 'signup',
+  FIND_NICKNAME: 'find-nickname',
+  REQUEST_PASSWORD_RESET: 'request-password-reset',
+  RESET_PASSWORD: 'reset-password'
+};
+
 export const AuthModal = ({ isOpen, onClose }: { 
   isOpen: boolean; 
   onClose: () => void 
@@ -106,34 +131,37 @@ export const AuthModal = ({ isOpen, onClose }: {
     email: '',
     nickname: '',
     password: '',
-    code: ''
+    code: '',
+    newPassword: ''
   });
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [errorColor, setErrorColor] = useState('red');
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [mode, setMode] = useState(modes.LOGIN);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [fieldValidity, setFieldValidity] = useState({
     email: false,
     nickname: false,
     password: false,
-    code: false
+    code: false,
+    newPassword: false
   });
 
   const { login, setUser } = useAuthStore();
 
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ email: '', nickname: '', password: '', code: '' });
+      setFormData({ email: '', nickname: '', password: '', code: '', newPassword: '' });
       setTimeLeft(0);
-      setIsSignUp(false);
+      setMode(modes.LOGIN);
       setError('');
       setFieldValidity({
         email: false,
         nickname: false,
         password: false,
-        code: false
+        code: false,
+        newPassword: false
       });
     }
   }, [isOpen]);
@@ -153,15 +181,57 @@ export const AuthModal = ({ isOpen, onClose }: {
   };
   
   const isFormValid = useMemo(() => {
-    return {
-      email: isSignUp 
-        ? formData.email.trim() !== '' && isValidEmail(formData.email) 
-        : true,
-      nickname: !!formData.nickname.trim(),
-      password: isSignUp ? formData.password.trim().length >= 8 : !!formData.password.trim(),
-      code: isSignUp ? !!formData.code.trim() : true
-    };
-  }, [formData, isSignUp]);
+    switch(mode) {
+      case modes.LOGIN:
+        return {
+          email: true,
+          nickname: !!formData.nickname.trim(),
+          password: !!formData.password.trim(),
+          code: true,
+          newPassword: true
+        };
+      case modes.SIGNUP:
+        return {
+          email: formData.email.trim() !== '' && isValidEmail(formData.email),
+          nickname: !!formData.nickname.trim(),
+          password: formData.password.trim().length >= 8,
+          code: !!formData.code.trim(),
+          newPassword: true
+        };
+      case modes.FIND_NICKNAME:
+        return {
+          email: formData.email.trim() !== '' && isValidEmail(formData.email),
+          nickname: true,
+          password: true,
+          code: true,
+          newPassword: true
+        };
+      case modes.REQUEST_PASSWORD_RESET:
+        return {
+          email: formData.email.trim() !== '' && isValidEmail(formData.email),
+          nickname: true,
+          password: true,
+          code: true,
+          newPassword: true
+        };
+      case modes.RESET_PASSWORD:
+        return {
+          email: formData.email.trim() !== '' && isValidEmail(formData.email),
+          nickname: true,
+          password: true,
+          code: !!formData.code.trim(),
+          newPassword: formData.newPassword.trim().length >= 8
+        };
+      default:
+        return {
+          email: false,
+          nickname: false,
+          password: false,
+          code: false,
+          newPassword: false
+        };
+    }
+  }, [formData, mode]);
 
   useEffect(() => {
     setFieldValidity(isFormValid);
@@ -182,7 +252,11 @@ export const AuthModal = ({ isOpen, onClose }: {
     
     try {
       setLoading(true);
-      sendVerificationCode(formData.email);
+      if (mode === modes.SIGNUP) {
+        await sendVerificationCode(formData.email);
+      } else if (mode === modes.RESET_PASSWORD || mode === modes.REQUEST_PASSWORD_RESET) {
+        await requestPasswordReset(formData.email);
+      }
       setTimeLeft(300);
     } catch (err) {
       showError(err instanceof Error ? err.message : '요청 처리 실패');
@@ -200,31 +274,48 @@ export const AuthModal = ({ isOpen, onClose }: {
   
     setLoading(true);
     try {
-      if (isSignUp) {
-        await signUp(formData);
-        showError('회원가입 성공! 로그인해주세요', 'black');
-        setIsSignUp(false);
-      } else {
-        const responseData = await logIn(formData.nickname, formData.password);
-        if (responseData.status == 200) {
-          if (typeof responseData.data === 'object') {
-            login(responseData.data.accessToken, responseData.data.refreshToken);
-            
-            try {
-              const userInfoResponse = await getUserInfo(responseData.data.accessToken);
-              if (userInfoResponse.status === 200 && userInfoResponse.data) {
-                setUser(userInfoResponse.data);
+      switch (mode) {
+        case modes.SIGNUP:
+          await signUp(formData);
+          showError('회원가입 성공! 로그인해주세요', 'black');
+          setMode(modes.LOGIN);
+          break;
+
+        case modes.LOGIN: { 
+          const responseData = await logIn(formData.nickname, formData.password);
+          if (responseData.status === 200) {
+            if (typeof responseData.data === 'object') {
+              login(responseData.data.accessToken, responseData.data.refreshToken);
+              
+              try {
+                const userInfoResponse = await getUserInfo(responseData.data.accessToken);
+                if (userInfoResponse.status === 200 && userInfoResponse.data) {
+                  setUser(userInfoResponse.data);
+                }
+              } catch (userInfoError) {
+                console.error('Failed to fetch user info:', userInfoError);
               }
-            } catch (userInfoError) {
-              console.error('Failed to fetch user info:', userInfoError);
+            } else {
+              showError('로그인 데이터가 올바르지 않습니다');
             }
           } else {
-            showError('로그인 데이터가 올바르지 않습니다');
+            showError('로그인 실패');
           }
-        } else {
-          showError('로그인 실패');
+          onClose();
+          break; 
         }
-        onClose();
+
+        case modes.FIND_NICKNAME:
+          await findNickname(formData.email);
+          showError('닉네임이 이메일로 전송되었습니다.', 'black');
+          setMode(modes.LOGIN);
+          break;
+
+        case modes.REQUEST_PASSWORD_RESET:
+          await requestPasswordReset(formData.email);
+          showError('비밀번호 재설정 링크가 이메일로 전송되었습니다.', 'black');
+          setMode(modes.RESET_PASSWORD);
+          break;
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -235,132 +326,225 @@ export const AuthModal = ({ isOpen, onClose }: {
     }
   };
 
+  const getModalTitle = () => {
+    switch(mode) {
+      case modes.LOGIN: return '로그인';
+      case modes.SIGNUP: return '회원가입';
+      case modes.FIND_NICKNAME: return '닉네임 찾기';
+      case modes.REQUEST_PASSWORD_RESET: return '비밀번호 찾기';
+      default: return '';
+    }
+  };
+
+  const renderForm = () => {
+    switch(mode) {
+      case modes.LOGIN:
+        return (
+          <>
+            <Input
+              type="text"
+              placeholder="닉네임"
+              value={formData.nickname}
+              onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
+              style={{ borderColor: fieldValidity.nickname ? '#ddd' : 'red' }}
+            />
+            <ValidationMessage $valid={fieldValidity.nickname}>
+              {fieldValidity.nickname ? '' : '닉네임을 입력해주세요'}
+            </ValidationMessage>
+
+            <Input
+              type="password"
+              placeholder="비밀번호"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              style={{ borderColor: fieldValidity.password ? '#ddd' : 'red' }}
+            />
+            <ValidationMessage $valid={fieldValidity.password}>
+              {fieldValidity.password ? '' : '비밀번호를 입력해주세요'}
+            </ValidationMessage>
+          </>
+        );
+        
+      case modes.SIGNUP:
+        return (
+          <>
+            <Input
+              type="email"
+              placeholder="이메일"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              style={{ borderColor: fieldValidity.email ? '#ddd' : 'red' }}
+            />
+            <ValidationMessage $valid={fieldValidity.email}>
+              {formData.email.trim() === '' 
+                ? '이메일을 입력해주세요'
+                : (fieldValidity.email 
+                  ? '' 
+                  : '유효한 이메일을 입력해주세요')}
+            </ValidationMessage>
+
+            <Input
+              type="text"
+              placeholder="닉네임"
+              value={formData.nickname}
+              onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
+              style={{ borderColor: fieldValidity.nickname ? '#ddd' : 'red' }}
+            />
+            <ValidationMessage $valid={fieldValidity.nickname}>
+              {fieldValidity.nickname ? '' : '닉네임을 입력해주세요'}
+            </ValidationMessage>
+
+            <Input
+              type="password"
+              placeholder="비밀번호"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              style={{ borderColor: fieldValidity.password ? '#ddd' : 'red' }}
+            />
+            <ValidationMessage $valid={fieldValidity.password}>
+            {formData.password.trim() === '' 
+                ? '비밀번호를 입력해주세요'
+                : (fieldValidity.password 
+                  ? '' 
+                  : '8자리 이상의 비밀번호를 입력해주세요')}
+            </ValidationMessage>
+
+            <div style={{ position: 'relative' }}>
+              <Input
+                type="number"
+                placeholder="인증코드"
+                value={formData.code}
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                style={{ borderColor: fieldValidity.code ? '#ddd' : 'red', paddingRight: '70px' }}
+              />
+              {timeLeft > 0 && (
+                <Timer>
+                  {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+                </Timer>
+              )}
+            </div>
+            <ValidationMessage $valid={fieldValidity.code}>
+              {fieldValidity.code ? '' : '인증코드를 입력해주세요'}
+            </ValidationMessage>
+
+            <Button
+              type="button"
+              onClick={handleSendCode}
+              $disabled={timeLeft > 0 || loading}
+            >
+              {timeLeft > 0 ? '인증코드 재전송' : '인증코드 전송'}
+            </Button>
+          </>
+        );
+
+      case modes.FIND_NICKNAME:
+        return (
+          <>
+            <Input
+              type="email"
+              placeholder="이메일"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              style={{ borderColor: fieldValidity.email ? '#ddd' : 'red' }}
+            />
+            <ValidationMessage $valid={fieldValidity.email}>
+              {formData.email.trim() === '' 
+                ? '이메일을 입력해주세요'
+                : (fieldValidity.email 
+                  ? '' 
+                  : '유효한 이메일을 입력해주세요')}
+            </ValidationMessage>
+            
+            <p style={{ fontSize: '0.9rem', color: '#666' }}>
+              가입 시 사용한 이메일 주소를 입력하시면, 해당 이메일로 닉네임을 보내드립니다.
+            </p>
+          </>
+        );
+
+      case modes.REQUEST_PASSWORD_RESET:
+        return (
+          <>
+            <Input
+              type="email"
+              placeholder="이메일"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              style={{ borderColor: fieldValidity.email ? '#ddd' : 'red' }}
+            />
+            <ValidationMessage $valid={fieldValidity.email}>
+              {formData.email.trim() === '' 
+                ? '이메일을 입력해주세요'
+                : (fieldValidity.email 
+                  ? '' 
+                  : '유효한 이메일을 입력해주세요')}
+            </ValidationMessage>
+            
+            <p style={{ fontSize: '0.9rem', color: '#666' }}>
+              가입 시 사용한 이메일 주소를 입력하시면, 비밀번호 재설정 코드를 보내드립니다.
+            </p>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderFooter = () => {
+    if (mode === modes.LOGIN) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+          <Button 
+            type="button" 
+            onClick={() => setMode(modes.SIGNUP)}
+            $disabled={loading}
+            style={{ background: 'none', color: theme.primary }}
+          >
+            회원가입
+          </Button>
+          <Button 
+            type="button" 
+            onClick={() => setMode(modes.FIND_NICKNAME)}
+            style={{ background: 'none', color: theme.primary }}
+          >
+            닉네임 찾기
+          </Button>
+          <Button 
+            type="button" 
+            onClick={() => setMode(modes.REQUEST_PASSWORD_RESET)}
+            style={{ background: 'none', color: theme.primary }}
+          >
+            비밀번호 찾기
+          </Button>
+        </div>
+      );
+    } else {
+      return (
+        <BackButton onClick={() => setMode(modes.LOGIN)}>
+          로그인 화면으로 돌아가기
+        </BackButton>
+      );
+    }
+  };
+
   return (
     <ModalOverlay $isOpen={isOpen} onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
-        <h2>{isSignUp ? '회원가입' : '로그인'}</h2>
+        <h2>{getModalTitle()}</h2>
 
         <Form onSubmit={handleSubmit}>
-          {isSignUp && (
-            <>
-              <Input
-                type="email"
-                placeholder="이메일"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                style={{ borderColor: fieldValidity.email ? '#ddd' : 'red' }}
-              />
-              <ValidationMessage $valid={fieldValidity.email}>
-                {formData.email.trim() === '' 
-                  ? '이메일을 입력해주세요'
-                  : (fieldValidity.email 
-                    ? '' 
-                    : '유효한 이메일을 입력해주세요')}
-              </ValidationMessage>
-            </>
-          )}
-
-          <Input
-            type="text"
-            placeholder="닉네임"
-            value={formData.nickname}
-            onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
-            style={{ borderColor: fieldValidity.nickname ? '#ddd' : 'red' }}
-          />
-          <ValidationMessage $valid={fieldValidity.nickname}>
-            {fieldValidity.nickname ? '' : '닉네임을 입력해주세요'}
-          </ValidationMessage>
-
-          <Input
-            type="password"
-            placeholder="비밀번호"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            style={{ borderColor: fieldValidity.password ? '#ddd' : 'red' }}
-          />
-          <ValidationMessage $valid={fieldValidity.password}>
-          {formData.password.trim() === '' 
-                  ? '비밀번호를 입력해주세요'
-                  : (fieldValidity.password 
-                    ? '' 
-                    : '8자리 이상의 비밀번호를 입력해주세요')}
-          </ValidationMessage>
-
-          {isSignUp && (
-            <>
-              <div style={{ position: 'relative' }}>
-                <Input
-                  type="number"
-                  placeholder="인증코드"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  style={{ borderColor: fieldValidity.code ? '#ddd' : 'red', paddingRight: '70px' }}
-                />
-                {timeLeft > 0 && (
-                  <Timer>
-                    {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
-                  </Timer>
-                )}
-              </div>
-              <ValidationMessage $valid={fieldValidity.code}>
-                {fieldValidity.code ? '' : '인증코드를 입력해주세요'}
-              </ValidationMessage>
-
-              <Button
-                type="button"
-                onClick={handleSendCode}
-                $disabled={timeLeft > 0 || loading}
-              >
-                {timeLeft > 0 ? '인증코드 재전송' : '인증코드 전송'}
-              </Button>
-            </>
-          )}
+          {renderForm()}
 
           <Button 
             type="submit" 
             $disabled={!Object.values(isFormValid).every(Boolean) || loading}
           >
-            {loading ? '처리 중...' : isSignUp ? '회원가입' : '로그인'}
+            {loading ? '처리 중...' : getModalTitle()}
           </Button>
         </Form>
 
         <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-          {isSignUp ? (
-            <Button 
-              type="button" 
-              onClick={() => setIsSignUp(false)}
-              $disabled={loading}
-              style={{ background: 'none', color: theme.primary }}
-            >
-              이미 계정이 있으신가요? 로그인
-            </Button>
-          ) : (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-              <Button 
-                type="button" 
-                onClick={() => setIsSignUp(true)}
-                $disabled={loading}
-                style={{ background: 'none', color: theme.primary }}
-              >
-                회원가입
-              </Button>
-              <Button 
-                type="button" 
-                onClick={() => showError('서비스 준비 중입니다')}
-                style={{ background: 'none', color: theme.primary }}
-              >
-                닉네임 찾기
-              </Button>
-              <Button 
-                type="button" 
-                onClick={() => showError('서비스 준비 중입니다')}
-                style={{ background: 'none', color: theme.primary }}
-              >
-                비밀번호 찾기
-              </Button>
-            </div>
-          )}
+          {renderFooter()}
         </div>
 
         {showErrorModal && (

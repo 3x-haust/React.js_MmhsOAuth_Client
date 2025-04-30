@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { useAuthStore } from "../../features/auth";
+import { useAuthStore } from "@/features/auth";
 import {
   ConnectedApp,
   PermissionHistory,
@@ -9,7 +9,7 @@ import {
   getPermissionsHistory,
   revokeApplication,
   updateProfile,
-} from "../../features/profile";
+} from "@/features/profile";
 
 const Container = styled.div`
   max-width: 1200px;

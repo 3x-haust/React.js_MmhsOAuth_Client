@@ -4,3 +4,7 @@ export { sendVerificationCode } from './SendVerificationCode';
 export { signUp } from './SignUp';
 export { logOut } from './Logout';
 export { getUserInfo } from './GetUserInfo';
+export { requestPasswordReset } from './RequestPasswordReset';
+export { resetPasswordWithToken } from './ResetPasswordWithToken';
+export { verifyResetToken } from './VerifyResetToken';
+export { findNickname } from './FindNickname';

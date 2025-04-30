@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { useAuthStore } from "../features/auth";
+import { useAuthStore } from "@/features/auth";
 
 const HeaderContainer = styled.header`
   background-color: white;

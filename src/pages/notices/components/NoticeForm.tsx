@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { Notice, CreateNoticeRequest, UpdateNoticeRequest } from '../../../features/notice/api/noticeService';
+import { Notice, CreateNoticeRequest, UpdateNoticeRequest } from '@/features/notice/api/noticeService';
 
 interface NoticeFormProps {
   initialData?: Notice;

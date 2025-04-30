@@ -1,5 +1,5 @@
-import { API_URL } from '../../../shared/api/constants';
-import { executeWithTokenRefresh } from '../../auth/api/authService';
+import { API_URL } from '@/shared/api/constants';
+import { executeWithTokenRefresh } from '@/features/auth/api/authService';
 
 interface NoticeAuthor {
   id: number;

@@ -1,6 +1,6 @@
-import { API_URL } from '../../../shared/api/constants';
-import { executeWithTokenRefresh } from '../../auth/api/authService';
-import { User } from '../../auth/hooks';
+import { API_URL } from '@/shared/api/constants';
+import { executeWithTokenRefresh } from '@/features/auth/api/authService';
+import { User } from '@/features/auth/hooks';
 
 export interface UpdateProfileRequest {
   email?: string;

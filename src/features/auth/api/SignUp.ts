@@ -1,5 +1,5 @@
 import { AuthResponse } from ".";
-import { API_URL } from '../../../shared/api/constants';
+import { API_URL } from '@/shared/api/constants';
 
 export const signUp = async (
   userData: {

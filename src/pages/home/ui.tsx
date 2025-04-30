@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { useAuthStore } from "../../features/auth";
-import { AuthModalWrapper } from "../../widgets";
-import { Notice, NoticeService } from '../../features/notice/api/noticeService';
+import { useAuthStore } from "@/features/auth";
+import { AuthModalWrapper } from "@/widgets";
+import { Notice, NoticeService } from '@/features/notice/api/noticeService';
 
 const HomeContainer = styled.div`
   max-width: 1200px;

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import Cookies from 'js-cookie';
-import { logOut, getUserInfo } from './api';
+import { logOut, getUserInfo } from '@/features/auth/api';
 
 export interface User {
   id: number;

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { NoticeService, CreateNoticeRequest, UpdateNoticeRequest } from '../../features/notice/api/noticeService';
-import { useAuthStore } from '../../features/auth';
-import { NoticeForm } from './components/NoticeForm';
+import { NoticeService, CreateNoticeRequest, UpdateNoticeRequest } from '@/features/notice/api/noticeService';
+import { useAuthStore } from '@/features/auth';
+import { NoticeForm } from '@/pages/notices/components/NoticeForm';
 
 const CreateContainer = styled.div`
   max-width: 1000px;

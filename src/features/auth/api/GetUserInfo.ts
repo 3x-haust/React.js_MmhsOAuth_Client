@@ -1,5 +1,5 @@
-import { User } from '../hooks';
-import { API_URL } from '../../../shared/api/constants';
+import { User } from '@/features/auth/hooks';
+import { API_URL } from '@/shared/api/constants';
 import Cookies from 'js-cookie';
 
 export interface GetUserInfoResponse {

@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { User } from '../../../features/auth/hooks';
-import { getAllUsers, deleteUser } from '../../../features/admin/api/userAdmin';
-import { useAuthStore } from '../../../features/auth';
+import { User } from '@/features/auth/hooks';
+import { getAllUsers, deleteUser } from '@/features/admin/api/userAdmin';
+import { useAuthStore } from '@/features/auth';
 
 const Container = styled.div`
   max-width: 1200px;
