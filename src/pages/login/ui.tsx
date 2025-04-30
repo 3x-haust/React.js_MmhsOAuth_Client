@@ -176,7 +176,6 @@ export const LoginPage = () => {
         email: formData.email.trim() !== '' && isValidEmail(formData.email),
         nickname: true,
         password: true,
-        code: true,
       };
     }
 
