@@ -47,10 +47,9 @@ export const ConsentPage = () => {
         if (!clientId) return;
 
         const data = await getClientInfo(clientId);
-        const status = await checkApplicationStatus(clientId);
 
         if (data.status === 200) {
-          setClientInfo(data.data);
+          const status = await checkApplicationStatus(clientId);
 
           if (status.data.status === 'active') {
             const url = await approveConsent({
@@ -64,6 +63,8 @@ export const ConsentPage = () => {
             window.location.href = url.data.url;
             return;
           }
+
+          setClientInfo(data.data);
         } else if (data.status === 401 && data.message === 'TOKEN_EXPIRED') {
           try {
             const refreshData = await refreshToken();
