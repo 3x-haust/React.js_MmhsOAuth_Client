@@ -51,7 +51,7 @@ export const ConsentPage = () => {
         if (data.status === 200) {
           const status = await checkApplicationStatus(clientId);
 
-          if (status.data.status === 'active') {
+          if (status.status === 200 && status.data.status === 'active') {
             const url = await approveConsent({
               client_id: clientId,
               redirect_uri: redirectUri,
@@ -59,7 +59,6 @@ export const ConsentPage = () => {
               approved: true,
               scope: scope,
             });
-
             window.location.href = url.data.url;
             return;
           }
