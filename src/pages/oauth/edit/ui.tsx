@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -21,17 +20,11 @@ export const EditOAuthAppPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { user, login } = useAuthStore();
+  const { login } = useAuthStore();
 
   useEffect(() => {
-    const token = Cookies.get('accessToken');
-    if (!user && !token) {
-      navigate(`/login?redirect=/oauth/edit/${id}`);
-      return;
-    }
-
     fetchAppData();
-  }, [navigate, user, id]);
+  }, []);
 
   const fetchAppData = async () => {
     if (!id) return;

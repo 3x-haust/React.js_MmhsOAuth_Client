@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -28,14 +27,6 @@ export const ConsentPage = () => {
   const responseType = searchParams.get('response_type');
 
   useEffect(() => {
-    const token = Cookies.get('accessToken');
-    if (!user && !token) {
-      navigate(
-        `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`
-      );
-      return;
-    }
-
     if (!clientId || !redirectUri || !state || !responseType) {
       setError('필수 매개변수가 누락되었습니다.');
       setLoading(false);
@@ -86,7 +77,7 @@ export const ConsentPage = () => {
     };
 
     fetchClientInfo();
-  }, [clientId, navigate, redirectUri, responseType, state, user, login]);
+  }, [clientId, navigate, redirectUri, responseType, state, user, login, scope]);
 
   const handleConsent = async (approved: boolean) => {
     setLoading(true);

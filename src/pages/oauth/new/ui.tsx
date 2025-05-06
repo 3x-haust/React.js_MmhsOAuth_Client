@@ -1,9 +1,7 @@
-import Cookies from 'js-cookie';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { useAuthStore } from '@/features/auth';
 import { createOAuthApp } from '@/features/oauth';
 
 export const NewOAuthAppPage = () => {
@@ -18,15 +16,6 @@ export const NewOAuthAppPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { user } = useAuthStore();
-
-  useEffect(() => {
-    const token = Cookies.get('accessToken');
-    if (!user && !token) {
-      navigate('/login?redirect=/oauth/new');
-      return;
-    }
-  }, [navigate, user]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>

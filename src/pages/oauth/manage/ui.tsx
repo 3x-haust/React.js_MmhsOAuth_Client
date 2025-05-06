@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -27,17 +26,11 @@ export const ManageOAuthAppsPage = () => {
   const [deleting, setDeleting] = useState(false);
 
   const navigate = useNavigate();
-  const { user, login } = useAuthStore();
+  const { login } = useAuthStore();
 
   useEffect(() => {
-    const token = Cookies.get('accessToken');
-    if (!user && !token) {
-      navigate('/login?redirect=/oauth/manage');
-      return;
-    }
-
     fetchApps();
-  }, [navigate, user]);
+  }, []);
 
   const fetchApps = async () => {
     try {
