@@ -63,7 +63,7 @@ export const refreshToken = async () => {
 
 export const getClientInfo = async (clientId: string) => {
   const res = await fetch(
-    `${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${clientId}`,
+    `${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/client/${clientId}`,
     {
       headers: {
         Authorization: `Bearer ${Cookies.get('accessToken')}`,
