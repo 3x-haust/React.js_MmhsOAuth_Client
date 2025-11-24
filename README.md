@@ -37,7 +37,8 @@
 ## 📚 관련 프로젝트
 
 - [미림마이스터고 OAuth Backend](https://github.com/e-mirim/mmhs_oauth_backend) - 백엔드 API 서버
-- [미림마이스터고 OAuth 테스트](https://github.com/e-mirim/mmhs_oauth_test) - 테스트 및 통합 예제
+- [미림마이스터고 OAuth Flutter Library](https://github.com/3x-haust/Flutter_MmhsOAuth_Library) - 플러터 라이브러리
+- [미림마이스터고 OAuth React Library](https://github.com/3x-haust/React.js_MmhsOAuth_Library/) - 리액트 라이브러리
 
 ## 📖 개발 문서
 
