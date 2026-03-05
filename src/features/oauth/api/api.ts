@@ -36,6 +36,15 @@ interface OAuthAppFormData {
   allowedUserType: string;
 }
 
+type ApplicationStatusResponse = {
+  status: number;
+  message: string;
+  data: {
+    status?: string;
+    [key: string]: unknown;
+  } | null;
+};
+
 export const refreshToken = async () => {
   try {
     const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/auth/refresh`, {
@@ -156,7 +165,9 @@ export const deleteOAuthApp = async (id: number) => {
   return await response.json();
 };
 
-export const checkApplicationStatus = async (clientId: string) => {
+export const checkApplicationStatus = async (
+  clientId: string
+): Promise<ApplicationStatusResponse> => {
   try {
     const response = await fetch(
       `${import.meta.env.VITE_APP_SERVER_URL}/api/v1/user/applications/${clientId}/status`,
@@ -166,27 +177,25 @@ export const checkApplicationStatus = async (clientId: string) => {
         },
       }
     );
-    
-    // 401 에러 처리 (토큰 만료 등)
+
     if (response.status === 401) {
       try {
         const refreshResult = await refreshToken();
         if (refreshResult) {
-          // 토큰을 새로 받았으니 재시도
           return checkApplicationStatus(clientId);
         }
       } catch (error) {
         console.error('토큰 갱신 실패:', error);
       }
     }
-    
-    return await response.json();
+
+    return (await response.json()) as ApplicationStatusResponse;
   } catch (error) {
     console.error('애플리케이션 상태 확인 중 오류:', error);
     return {
       status: 500,
       message: '애플리케이션 상태를 확인하는 중 오류가 발생했습니다.',
-      data: null
+      data: null,
     };
   }
 };

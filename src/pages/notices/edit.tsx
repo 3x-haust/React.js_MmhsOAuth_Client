@@ -1,55 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 import { useAuthStore } from '@/features/auth';
 import { NoticeService, Notice, UpdateNoticeRequest } from '@/features/notice/api/noticeService';
 import { NoticeForm } from '@/pages/notices/components/NoticeForm';
 
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
 const EditContainer = styled.div`
-  max-width: 1000px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 40px 20px;
+  display: grid;
+  gap: 12px;
+`;
+
+const HeaderCard = styled.section`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 12px;
+  padding: 18px;
 `;
 
 const PageTitle = styled.h1`
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+`;
+
+const Description = styled.p`
+  margin-top: 8px;
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.86rem;
 `;
 
 const ErrorMessage = styled.div`
-  color: ${({ theme }) => theme.colors?.error || '#e74c3c'};
-  background-color: #fef0f0;
-  padding: 1rem;
-  border-radius: 4px;
-  margin-bottom: 2rem;
-  text-align: center;
+  border: 1px solid ${({ theme }) => theme.colors.error};
+  background: ${({ theme }) => theme.colors.errorLight};
+  color: ${({ theme }) => theme.colors.error};
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.85rem;
 `;
 
-const LoadingSpinner = styled.div`
+const FormWrapper = styled.section`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 12px;
+  padding: 18px;
+`;
+
+const LoadingCard = styled.section`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 12px;
+  min-height: 220px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 200px;
+  justify-content: center;
 
-  &:after {
+  &::after {
     content: '';
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid ${({ theme }) => theme.colors?.primary || '#5E81F4'};
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 3px solid ${({ theme }) => theme.colors.border};
+    border-top-color: ${({ theme }) => theme.colors.primary};
+    animation: ${spin} 0.9s linear infinite;
   }
 `;
 
@@ -77,9 +101,9 @@ export const EditNoticePage: React.FC = () => {
         const data = await NoticeService.getNoticeById(parseInt(id, 10));
         setNotice(data);
         setError(null);
-      } catch (err) {
+      } catch (fetchError) {
         setError('공지사항을 불러오는 중 오류가 발생했습니다.');
-        console.error('Error fetching notice:', err);
+        console.error('Error fetching notice:', fetchError);
       } finally {
         setIsLoading(false);
       }
@@ -96,44 +120,49 @@ export const EditNoticePage: React.FC = () => {
       setError(null);
       await NoticeService.updateNotice(parseInt(id, 10), data);
       navigate(`/notices/${id}`, { replace: true });
-    } catch (err) {
+    } catch (updateError) {
       setError('공지사항 수정 중 오류가 발생했습니다. 다시 시도해주세요.');
-      console.error('Error updating notice:', err);
+      console.error('Error updating notice:', updateError);
       setIsSaving(false);
     }
   };
 
   if (isLoading) {
     return (
-      <>
-        <EditContainer>
+      <EditContainer>
+        <HeaderCard>
           <PageTitle>공지사항 수정</PageTitle>
-          <LoadingSpinner />
-        </EditContainer>
-      </>
+          <Description>기존 공지사항 내용을 업데이트합니다.</Description>
+        </HeaderCard>
+        <LoadingCard />
+      </EditContainer>
     );
   }
 
   if (!notice) {
     return (
-      <>
-        <EditContainer>
+      <EditContainer>
+        <HeaderCard>
           <PageTitle>공지사항 수정</PageTitle>
-          <ErrorMessage>공지사항을 찾을 수 없거나 존재하지 않는 공지사항입니다.</ErrorMessage>
-        </EditContainer>
-      </>
+          <Description>기존 공지사항 내용을 업데이트합니다.</Description>
+        </HeaderCard>
+        <ErrorMessage>공지사항을 찾을 수 없거나 존재하지 않는 공지사항입니다.</ErrorMessage>
+      </EditContainer>
     );
   }
 
   return (
-    <>
-      <EditContainer>
+    <EditContainer>
+      <HeaderCard>
         <PageTitle>공지사항 수정</PageTitle>
+        <Description>기존 공지사항 내용을 업데이트합니다.</Description>
+      </HeaderCard>
 
-        {error && <ErrorMessage>{error}</ErrorMessage>}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
 
+      <FormWrapper>
         <NoticeForm initialData={notice} onSubmit={handleSubmit} isLoading={isSaving} />
-      </EditContainer>
-    </>
+      </FormWrapper>
+    </EditContainer>
   );
 };

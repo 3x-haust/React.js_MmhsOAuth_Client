@@ -1,133 +1,166 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 import { useAuthStore } from '@/features/auth';
 import { Notice, NoticeService } from '@/features/notice/api/noticeService';
 
-const DetailContainer = styled.div`
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px 20px;
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 `;
 
-const NoticeHeader = styled.div`
-  margin-bottom: 2rem;
+const DetailContainer = styled.div`
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+`;
+
+const DetailCard = styled.article`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surface};
+  padding: 18px;
 `;
 
 const Title = styled.h1`
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: clamp(1.22rem, 2vw, 1.56rem);
+  line-height: 1.35;
 `;
 
 const NoticeInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid ${({ theme }) => theme.colors?.border || '#eee'};
-  color: ${({ theme }) => theme.colors?.secondaryText || '#666'};
-  font-size: 0.9rem;
+  margin-top: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.82rem;
 `;
 
-const AuthorDate = styled.div``;
-
 const NoticeContent = styled.div`
-  margin: 2rem 0;
-  line-height: 1.8;
+  margin-top: 16px;
+  color: ${({ theme }) => theme.colors.text};
+  line-height: 1.85;
   white-space: pre-wrap;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
+  font-size: clamp(1rem, 1.2vw, 1.08rem);
 `;
 
 const ActionButtons = styled.div`
+  margin-top: 18px;
   display: flex;
   justify-content: space-between;
-  margin-top: 3rem;
+  align-items: center;
+  gap: 10px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
 
-const Button = styled.button`
-  padding: 0.7rem 1.5rem;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+const RightButtons = styled.div`
+  display: inline-flex;
+  gap: 8px;
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
+`;
+
+const BaseButton = styled.button`
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.82rem;
+  font-weight: 600;
 `;
 
 const BackButton = styled(Link)`
-  text-decoration: none;
-  display: inline-block;
-  padding: 0.7rem 1.5rem;
-  background-color: ${({ theme }) => theme.colors?.background || '#f5f5f5'};
-  color: ${({ theme }) => theme.colors?.text || '#333'};
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors?.border || '#eee'};
-  }
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.82rem;
+  font-weight: 600;
 `;
 
 const EditButton = styled(Link)`
-  text-decoration: none;
-  display: inline-block;
-  padding: 0.7rem 1.5rem;
-  background-color: ${({ theme }) => theme.colors?.primary || '#5E81F4'};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.primaryDark};
+  background: ${({ theme }) => theme.colors.primary};
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors?.primaryDark || '#4B6ED3'};
+    background: ${({ theme }) => theme.colors.primaryDark};
+  }
+
+  @media (max-width: 640px) {
+    flex: 1;
   }
 `;
 
-const DeleteButton = styled(Button)`
-  background-color: ${({ theme }) => theme.colors?.error || '#e74c3c'};
-  color: white;
-  border: none;
+const DeleteButton = styled(BaseButton)`
+  border-color: ${({ theme }) => theme.colors.error};
+  background: ${({ theme }) => theme.colors.error};
+  color: #ffffff;
 
   &:hover {
-    background-color: #c0392b;
+    background: ${({ theme }) => theme.colors.errorDark};
+  }
+
+  @media (max-width: 640px) {
+    flex: 1;
   }
 `;
 
 const LoadingSpinner = styled.div`
+  min-height: 260px;
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surface};
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 300px;
+  justify-content: center;
 
-  &:after {
+  &::after {
     content: '';
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid ${({ theme }) => theme.colors?.primary || '#5E81F4'};
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 3px solid ${({ theme }) => theme.colors.border};
+    border-top-color: ${({ theme }) => theme.colors.primary};
+    animation: ${spin} 0.9s linear infinite;
   }
 `;
 
 const ErrorMessage = styled.div`
-  color: ${({ theme }) => theme.colors?.error || '#e74c3c'};
-  background-color: #fef0f0;
-  padding: 1rem;
-  border-radius: 4px;
-  margin: 2rem 0;
-  text-align: center;
+  border: 1px solid ${({ theme }) => theme.colors.error};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.errorLight};
+  color: ${({ theme }) => theme.colors.error};
+  padding: 12px 14px;
+  font-size: 0.84rem;
 `;
 
 const formatDate = (dateString: string): string => {
@@ -160,9 +193,9 @@ export const NoticeDetailPage: React.FC = () => {
         setLoading(true);
         const data = await NoticeService.getNoticeById(parseInt(id, 10));
         setNotice(data);
-      } catch (err) {
+      } catch (fetchError) {
         setError('공지사항을 불러오는 중 오류가 발생했습니다.');
-        console.error('Error fetching notice details:', err);
+        console.error('Error fetching notice details:', fetchError);
       } finally {
         setLoading(false);
       }
@@ -180,50 +213,41 @@ export const NoticeDetailPage: React.FC = () => {
       setDeleteLoading(true);
       await NoticeService.deleteNotice(parseInt(id, 10));
       navigate('/notices', { replace: true });
-    } catch (err) {
+    } catch (deleteError) {
       setError('공지사항을 삭제하는 중 오류가 발생했습니다.');
-      console.error('Error deleting notice:', err);
+      console.error('Error deleting notice:', deleteError);
       setDeleteLoading(false);
     }
   };
 
   if (loading) {
     return (
-      <>
-        <DetailContainer>
-          <LoadingSpinner />
-        </DetailContainer>
-      </>
+      <DetailContainer>
+        <LoadingSpinner />
+      </DetailContainer>
     );
   }
 
   if (!notice) {
     return (
-      <>
-        <DetailContainer>
-          <ErrorMessage>공지사항을 찾을 수 없거나 존재하지 않는 공지사항입니다.</ErrorMessage>
-          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-            <BackButton to='/notices'>공지사항 목록으로</BackButton>
-          </div>
-        </DetailContainer>
-      </>
+      <DetailContainer>
+        <ErrorMessage>공지사항을 찾을 수 없거나 존재하지 않는 공지사항입니다.</ErrorMessage>
+        <BackButton to='/notices'>공지사항 목록으로</BackButton>
+      </DetailContainer>
     );
   }
 
   return (
-    <>
-      <DetailContainer>
-        <NoticeHeader>
-          <Title>{notice.title}</Title>
-          <NoticeInfo>
-            <AuthorDate>
-              {notice.author ? `작성자: ${notice.author.nickname} • ` : ''}
-              {formatDate(notice.createdAt)}
-            </AuthorDate>
-          </NoticeInfo>
-        </NoticeHeader>
+    <DetailContainer>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
 
-        {error && <ErrorMessage>{error}</ErrorMessage>}
+      <DetailCard>
+        <Title>{notice.title}</Title>
+
+        <NoticeInfo>
+          {notice.author ? `작성자: ${notice.author.nickname} · ` : ''}
+          {formatDate(notice.createdAt)}
+        </NoticeInfo>
 
         <NoticeContent>{notice.content}</NoticeContent>
 
@@ -231,17 +255,15 @@ export const NoticeDetailPage: React.FC = () => {
           <BackButton to='/notices'>목록으로 돌아가기</BackButton>
 
           {isAdmin && (
-            <div>
-              <EditButton to={`/notices/${notice.id}/edit`} style={{ marginRight: '1rem' }}>
-                수정
-              </EditButton>
+            <RightButtons>
+              <EditButton to={`/notices/${notice.id}/edit`}>수정</EditButton>
               <DeleteButton onClick={handleDelete} disabled={deleteLoading}>
                 {deleteLoading ? '처리 중...' : '삭제'}
               </DeleteButton>
-            </div>
+            </RightButtons>
           )}
         </ActionButtons>
-      </DetailContainer>
-    </>
+      </DetailCard>
+    </DetailContainer>
   );
 };

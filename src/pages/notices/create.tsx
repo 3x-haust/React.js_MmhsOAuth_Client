@@ -11,24 +11,44 @@ import {
 import { NoticeForm } from '@/pages/notices/components/NoticeForm';
 
 const CreateContainer = styled.div`
-  max-width: 1000px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 40px 20px;
+  display: grid;
+  gap: 12px;
+`;
+
+const HeaderCard = styled.section`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 12px;
+  padding: 18px;
 `;
 
 const PageTitle = styled.h1`
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+`;
+
+const Description = styled.p`
+  margin-top: 8px;
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.86rem;
 `;
 
 const ErrorMessage = styled.div`
-  color: ${({ theme }) => theme.colors?.error || '#e74c3c'};
-  background-color: #fef0f0;
-  padding: 1rem;
-  border-radius: 4px;
-  margin-bottom: 2rem;
-  text-align: center;
+  border: 1px solid ${({ theme }) => theme.colors.error};
+  background: ${({ theme }) => theme.colors.errorLight};
+  color: ${({ theme }) => theme.colors.error};
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.85rem;
+`;
+
+const FormWrapper = styled.section`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 12px;
+  padding: 18px;
 `;
 
 export const CreateNoticePage: React.FC = () => {
@@ -49,22 +69,25 @@ export const CreateNoticePage: React.FC = () => {
       setError(null);
       const newNotice = await NoticeService.createNotice(data as CreateNoticeRequest);
       navigate(`/notices/${newNotice.id}`, { replace: true });
-    } catch (err) {
+    } catch (createError) {
       setError('공지사항 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
-      console.error('Error creating notice:', err);
+      console.error('Error creating notice:', createError);
       setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <CreateContainer>
+    <CreateContainer>
+      <HeaderCard>
         <PageTitle>새 공지사항 작성</PageTitle>
+        <Description>공지 제목과 내용을 작성한 뒤 등록하세요.</Description>
+      </HeaderCard>
 
-        {error && <ErrorMessage>{error}</ErrorMessage>}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
 
+      <FormWrapper>
         <NoticeForm onSubmit={handleSubmit} isLoading={isLoading} />
-      </CreateContainer>
-    </>
+      </FormWrapper>
+    </CreateContainer>
   );
 };

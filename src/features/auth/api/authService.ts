@@ -26,6 +26,7 @@ export interface User {
   id: number;
   email: string;
   nickname: string;
+  profileImageUrl?: string | null;
   role: string;
   major?: string;
   generation?: string;

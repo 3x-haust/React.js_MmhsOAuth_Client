@@ -1,61 +1,77 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { useAuthStore } from '@/features/auth';
 
 const Container = styled.div`
-  max-width: 1200px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 20px;
+  display: grid;
+  gap: 12px;
+`;
+
+const Header = styled.section`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 12px;
+  padding: 18px;
 `;
 
 const Title = styled.h1`
-  font-size: 32px;
-  margin-bottom: 24px;
-  color: ${props => props.theme.colors.primary};
+  font-size: 1.2rem;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
-const Cards = styled.div`
+const Description = styled.p`
+  margin-top: 6px;
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.86rem;
+`;
+
+const Cards = styled.section`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
 `;
 
-const Card = styled.div`
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+const Card = styled.button`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surface};
+  padding: 18px;
+  text-align: left;
   transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-  cursor: pointer;
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    border-color: ${({ theme }) => theme.colors.primaryDark};
+    transform: translateY(-2px);
   }
 `;
 
 const CardTitle = styled.h2`
-  font-size: 22px;
+  font-size: 1.45rem;
   margin-bottom: 10px;
-  color: ${props => props.theme.colors.primary};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const CardDescription = styled.p`
-  color: #666;
-  margin-bottom: 15px;
+  color: ${({ theme }) => theme.colors.secondaryText};
+  margin-bottom: 14px;
+  font-size: 0.92rem;
 `;
 
 const CardFooter = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  color: ${props => props.theme.colors.primary};
-  font-weight: 600;
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 700;
+  font-size: 0.96rem;
 `;
 
 export function AdminDashboardPage() {
@@ -78,11 +94,14 @@ export function AdminDashboardPage() {
 
   return (
     <Container>
-      <Title>관리자 대시보드</Title>
+      <Header>
+        <Title>관리자 대시보드</Title>
+        <Description>관리자 권한 작업을 이곳에서 수행합니다.</Description>
+      </Header>
 
       <Cards>
-        {adminPages.map((page, index) => (
-          <Card key={index} onClick={() => navigate(page.link)}>
+        {adminPages.map(page => (
+          <Card key={page.link} type='button' onClick={() => navigate(page.link)}>
             <CardTitle>{page.title}</CardTitle>
             <CardDescription>{page.description}</CardDescription>
             <CardFooter>관리하기 →</CardFooter>

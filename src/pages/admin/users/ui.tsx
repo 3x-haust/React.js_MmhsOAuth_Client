@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -7,97 +7,177 @@ import { useAuthStore } from '@/features/auth';
 import { User } from '@/features/auth/hooks';
 
 const Container = styled.div`
-  max-width: 1200px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 20px;
+  display: grid;
+  gap: 12px;
+`;
+
+const HeaderCard = styled.section`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 12px;
+  padding: 18px;
 `;
 
 const Title = styled.h1`
-  font-size: 28px;
-  margin-bottom: 20px;
-  color: ${props => props.theme.colors.primary};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: clamp(1.2rem, 2vw, 1.52rem);
+`;
+
+const Description = styled.p`
+  margin-top: 7px;
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.86rem;
+`;
+
+const Toolbar = styled.div`
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+
+  @media (max-width: 860px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+const SearchInput = styled.input`
+  width: min(340px, 100%);
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.86rem;
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.mutedText};
+  }
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primaryDark};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.ring};
+  }
+`;
+
+const CountText = styled.p`
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.82rem;
+`;
+
+const TableCard = styled.section`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surface};
+  overflow: hidden;
+`;
+
+const TableScroll = styled.div`
+  width: 100%;
+  overflow-x: auto;
 `;
 
 const Table = styled.table`
   width: 100%;
+  min-width: 980px;
   border-collapse: collapse;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
 `;
 
 const Th = styled.th`
-  background-color: ${props => props.theme.colors.primary};
-  color: white;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.text};
   text-align: left;
-  padding: 12px 15px;
-`;
-
-const Td = styled.td`
-  border-bottom: 1px solid #ddd;
-  padding: 12px 15px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 11px 12px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  white-space: nowrap;
 `;
 
 const Tr = styled.tr`
   &:nth-child(even) {
-    background-color: #f8f9fa;
+    background: ${({ theme }) => theme.colors.surfaceElevated};
   }
 
   &:hover {
-    background-color: #f1f3f5;
+    background: ${({ theme }) => theme.colors.background};
   }
 `;
 
-const ActionButton = styled.button<{ variant?: 'edit' | 'delete' }>`
-  background-color: ${props =>
-    props.variant === 'delete' ? '#dc3545' : props.variant === 'edit' ? '#0d6efd' : '#6c757d'};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
-  cursor: pointer;
-  margin-right: 8px;
-  transition: background-color 0.2s;
+const Td = styled.td`
+  padding: 11px 12px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.84rem;
+  vertical-align: middle;
+`;
 
-  &:hover {
-    background-color: ${props =>
-      props.variant === 'delete' ? '#bd2130' : props.variant === 'edit' ? '#0b5ed7' : '#5a6268'};
-  }
+const StatusGroup = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const StatusBadge = styled.span<{ $tone: 'admin' | 'active' }>`
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid
+    ${({ theme, $tone }) => ($tone === 'admin' ? theme.colors.warning : theme.colors.success)};
+  color: ${({ theme, $tone }) => ($tone === 'admin' ? theme.colors.warning : theme.colors.success)};
+  background: ${({ theme, $tone }) =>
+    $tone === 'admin' ? theme.colors.warningLight : theme.colors.successLight};
 `;
 
 const ButtonGroup = styled.div`
-  display: flex;
-  gap: 8px;
+  display: inline-flex;
+  gap: 6px;
 `;
 
-const FilterContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  align-items: center;
+const ActionButton = styled.button<{ $variant: 'edit' | 'delete' }>`
+  min-height: 30px;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border: 1px solid
+    ${({ theme, $variant }) => ($variant === 'delete' ? theme.colors.error : theme.colors.primary)};
+  background: ${({ theme, $variant }) =>
+    $variant === 'delete' ? theme.colors.error : theme.colors.primary};
+  color: #ffffff;
+
+  &:hover {
+    background: ${({ theme, $variant }) =>
+      $variant === 'delete' ? theme.colors.errorDark : theme.colors.primaryDark};
+  }
 `;
 
-const SearchInput = styled.input`
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  width: 250px;
+const MessageCard = styled.section<{ $error?: boolean }>`
+  border: 1px solid
+    ${({ theme, $error }) => ($error ? theme.colors.error : theme.colors.cardBorder)};
+  border-radius: 12px;
+  background: ${({ theme, $error }) => ($error ? theme.colors.errorLight : theme.colors.surface)};
+  padding: 16px;
+  color: ${({ theme, $error }) => ($error ? theme.colors.error : theme.colors.secondaryText)};
+  font-size: 0.86rem;
 `;
 
-const StatusBadge = styled.span<{ isAdmin?: boolean; isActive?: boolean }>`
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  background-color: ${props => {
-    if (props.isAdmin) return '#9c27b0';
-    if (props.isActive) return '#28a745';
-    return '#dc3545';
-  }};
-  color: white;
-`;
+const getRoleLabel = (role: User['role']) => (role === 'student' ? '학생' : '교사');
+
+const getMajorLabel = (major: User['major']) => {
+  if (major === 'software') return '소프트웨어';
+  if (major === 'design') return '디자인';
+  if (major === 'web') return '웹';
+  return '-';
+};
 
 export function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -117,12 +197,13 @@ export function UserManagementPage() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await getAllUsers();
 
         if (response.status === 200 && response.data) {
           setUsers(response.data as User[]);
         } else {
-          setError(response.message);
+          setError(response.message || '사용자 목록을 불러오는데 실패했습니다.');
         }
       } catch {
         setError('사용자 목록을 불러오는데 실패했습니다.');
@@ -135,105 +216,119 @@ export function UserManagementPage() {
   }, []);
 
   const handleDelete = async (userId: number) => {
-    if (window.confirm('이 사용자를 정말 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.')) {
-      try {
-        const response = await deleteUser(userId);
-        if (response.status === 200) {
-          setUsers(users.filter(user => user.id !== userId));
-          alert('사용자가 삭제되었습니다.');
-        } else {
-          alert(response.message);
-        }
-      } catch {
-        alert('사용자 삭제 중 오류가 발생했습니다.');
+    if (!window.confirm('이 사용자를 정말 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.')) {
+      return;
+    }
+
+    try {
+      const response = await deleteUser(userId);
+      if (response.status === 200) {
+        setUsers(prev => prev.filter(target => target.id !== userId));
+        alert('사용자가 삭제되었습니다.');
+      } else {
+        alert(response.message || '사용자 삭제에 실패했습니다.');
       }
+    } catch {
+      alert('사용자 삭제 중 오류가 발생했습니다.');
     }
   };
 
-  const handleEdit = (userId: number) => {
-    navigate(`/admin/users/${userId}/edit`);
-  };
+  const filteredUsers = useMemo(() => {
+    const keyword = searchTerm.trim().toLowerCase();
+    if (!keyword) return users;
+    return users.filter(target => {
+      const email = target.email.toLowerCase();
+      const nickname = target.nickname.toLowerCase();
+      return email.includes(keyword) || nickname.includes(keyword);
+    });
+  }, [searchTerm, users]);
 
-  const filteredUsers = users.filter(
-    user =>
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.nickname.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (loading)
+  if (loading) {
     return (
       <Container>
-        <p>로딩 중...</p>
+        <MessageCard>사용자 목록을 불러오는 중입니다.</MessageCard>
       </Container>
     );
-  if (error)
+  }
+
+  if (error) {
     return (
       <Container>
-        <p>오류: {error}</p>
+        <MessageCard $error>오류: {error}</MessageCard>
       </Container>
     );
+  }
 
   return (
     <Container>
-      <Title>사용자 관리</Title>
+      <HeaderCard>
+        <Title>사용자 관리</Title>
+        <Description>사용자 계정 목록 조회 및 권한 관리</Description>
+        <Toolbar>
+          <SearchInput
+            type='text'
+            placeholder='이메일 또는 닉네임으로 검색'
+            value={searchTerm}
+            onChange={event => setSearchTerm(event.target.value)}
+          />
+          <CountText>총 {filteredUsers.length}명</CountText>
+        </Toolbar>
+      </HeaderCard>
 
-      <FilterContainer>
-        <SearchInput
-          type='text'
-          placeholder='이메일 또는 닉네임으로 검색'
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-        />
-      </FilterContainer>
-
-      <Table>
-        <thead>
-          <tr>
-            <Th>ID</Th>
-            <Th>이메일</Th>
-            <Th>닉네임</Th>
-            <Th>역할</Th>
-            <Th>전공</Th>
-            <Th>입학년도</Th>
-            <Th>상태</Th>
-            <Th>관리</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredUsers.map(user => (
-            <Tr key={user.id}>
-              <Td>{user.id}</Td>
-              <Td>{user.email}</Td>
-              <Td>{user.nickname}</Td>
-              <Td>{user.role === 'student' ? '학생' : '교사'}</Td>
-              <Td>
-                {user.major === 'software'
-                  ? '소프트웨어'
-                  : user.major === 'design'
-                    ? '디자인'
-                    : user.major === 'web'
-                      ? '웹'
-                      : '-'}
-              </Td>
-              <Td>{user.admission || '-'}</Td>
-              <Td>
-                {user.isAdmin && <StatusBadge isAdmin>관리자</StatusBadge>}
-                <StatusBadge isActive={true}>활성</StatusBadge>
-              </Td>
-              <Td>
-                <ButtonGroup>
-                  <ActionButton variant='edit' onClick={() => handleEdit(user.id)}>
-                    수정
-                  </ActionButton>
-                  <ActionButton variant='delete' onClick={() => handleDelete(user.id)}>
-                    삭제
-                  </ActionButton>
-                </ButtonGroup>
-              </Td>
-            </Tr>
-          ))}
-        </tbody>
-      </Table>
+      <TableCard>
+        <TableScroll>
+          <Table>
+            <thead>
+              <tr>
+                <Th>ID</Th>
+                <Th>이메일</Th>
+                <Th>닉네임</Th>
+                <Th>역할</Th>
+                <Th>전공</Th>
+                <Th>입학년도</Th>
+                <Th>상태</Th>
+                <Th>관리</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.map(target => (
+                <Tr key={target.id}>
+                  <Td>{target.id}</Td>
+                  <Td>{target.email}</Td>
+                  <Td>{target.nickname}</Td>
+                  <Td>{getRoleLabel(target.role)}</Td>
+                  <Td>{getMajorLabel(target.major)}</Td>
+                  <Td>{target.admission || '-'}</Td>
+                  <Td>
+                    <StatusGroup>
+                      {target.isAdmin && <StatusBadge $tone='admin'>관리자</StatusBadge>}
+                      <StatusBadge $tone='active'>활성</StatusBadge>
+                    </StatusGroup>
+                  </Td>
+                  <Td>
+                    <ButtonGroup>
+                      <ActionButton
+                        type='button'
+                        $variant='edit'
+                        onClick={() => navigate(`/admin/users/${target.id}/edit`)}
+                      >
+                        수정
+                      </ActionButton>
+                      <ActionButton
+                        type='button'
+                        $variant='delete'
+                        onClick={() => handleDelete(target.id)}
+                      >
+                        삭제
+                      </ActionButton>
+                    </ButtonGroup>
+                  </Td>
+                </Tr>
+              ))}
+            </tbody>
+          </Table>
+        </TableScroll>
+      </TableCard>
     </Container>
   );
 }

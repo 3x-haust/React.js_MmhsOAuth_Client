@@ -1,7 +1,5 @@
 import { createGlobalStyle } from 'styled-components';
 
-import theme from './theme';
-
 const GlobalStyles = createGlobalStyle`
   *, *::before, *::after {
     margin: 0;
@@ -9,42 +7,39 @@ const GlobalStyles = createGlobalStyle`
     box-sizing: border-box;
   }
 
-  html {
-    margin: 0;
-    padding: 0;
+  html, body, #root {
+    min-height: 100%;
   }
 
   body {
     margin: 0;
     padding: 0;
-    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background-color: #fff;
+    font-family:
+      'Pretendard',
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      'Helvetica Neue',
+      Arial,
+      sans-serif;
+    background-color: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.colors.text};
+    line-height: 1.45;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 
   a {
     text-decoration: none;
-    color: ${theme.primary};
-/* 
-    &:hover {
-      text-decoration: underline;
-    } */
+    color: ${({ theme }) => theme.colors.primary};
   }
 
   h1, h2, h3, h4, h5, h6 {
-    /* font-family: 'Pretendard', sans-serif;
-
-    border-bottom: 1px solid #ccc;
-    margin: 1.2em 0 .8em;
-    padding-bottom: 5px;
-
-    display: block;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-    font-weight: bold;
-    unicode-bidi: isolate; */
-
     margin: 0;
     font-family: 'Pretendard', sans-serif;
+    color: ${({ theme }) => theme.colors.text};
   }
 
   p {
@@ -75,9 +70,16 @@ const GlobalStyles = createGlobalStyle`
     display: block;
   }
 
-  a:focus {
-    outline: 2px solid #005fcc;
-    outline-offset: 2px;
+  input, textarea, button, a {
+    &:focus-visible {
+      outline: 2px solid ${({ theme }) => theme.colors.primary};
+      outline-offset: 2px;
+    }
+  }
+
+  ::selection {
+    background-color: ${({ theme }) => theme.colors.primaryLight};
+    color: ${({ theme }) => theme.colors.text};
   }
 
   @font-face {

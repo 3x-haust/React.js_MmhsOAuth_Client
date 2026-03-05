@@ -52,6 +52,16 @@ export interface RevokeApplicationResponse {
   data?: { clientId: string };
 }
 
+export interface ProfileImageResponse {
+  status: number;
+  message: string;
+  data?: {
+    id: number;
+    profileImageUrl: string | null;
+    updatedAt?: string;
+  };
+}
+
 export const updateProfile = async (
   profileData: UpdateProfileRequest
 ): Promise<ProfileResponse> => {
@@ -147,6 +157,63 @@ export const getPermissionsHistory = async (): Promise<PermissionsHistoryRespons
 
     const response = await fetch(`${API_URL}/api/v1/user/permissions-history`, {
       method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.message === 'TOKEN_EXPIRED') {
+      throw new Error('TOKEN_EXPIRED');
+    }
+
+    return data;
+  });
+};
+
+export const uploadProfileImage = async (file: File): Promise<ProfileImageResponse> => {
+  return executeWithTokenRefresh(async token => {
+    if (!token) {
+      return {
+        status: 401,
+        message: '인증 토큰이 없습니다.',
+      };
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch(`${API_URL}/api/v1/user/profile-image`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (data.message === 'TOKEN_EXPIRED') {
+      throw new Error('TOKEN_EXPIRED');
+    }
+
+    return data;
+  });
+};
+
+export const deleteProfileImage = async (): Promise<ProfileImageResponse> => {
+  return executeWithTokenRefresh(async token => {
+    if (!token) {
+      return {
+        status: 401,
+        message: '인증 토큰이 없습니다.',
+      };
+    }
+
+    const response = await fetch(`${API_URL}/api/v1/user/profile-image`, {
+      method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,

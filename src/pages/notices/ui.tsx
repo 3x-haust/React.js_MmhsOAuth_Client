@@ -1,144 +1,191 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 import { useAuthStore } from '@/features/auth';
 import { Notice, NoticeService } from '@/features/notice/api/noticeService';
 
+const shimmer = keyframes`
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+`;
+
 const NoticesContainer = styled.div`
-  max-width: 1000px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 40px 20px;
+  display: grid;
+  gap: 12px;
+`;
+
+const HeaderCard = styled.section`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 12px;
+  padding: 18px;
 `;
 
 const PageTitle = styled.h1`
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+  font-weight: 700;
+`;
+
+const PageDescription = styled.p`
+  margin-top: 8px;
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.86rem;
+`;
+
+const AdminActions = styled.div`
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const CreateButton = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid ${({ theme }) => theme.colors.primaryDark};
+  background: ${({ theme }) => theme.colors.primary};
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 700;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryDark};
+  }
+`;
+
+const ErrorMessage = styled.div`
+  border: 1px solid ${({ theme }) => theme.colors.error};
+  background: ${({ theme }) => theme.colors.errorLight};
+  color: ${({ theme }) => theme.colors.error};
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.85rem;
 `;
 
 const NoticesList = styled.div`
-  margin-top: 2rem;
+  display: grid;
+  gap: 10px;
 `;
 
-const NoticeItem = styled.div`
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+const NoticeItem = styled.article`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surface};
+  padding: 14px;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    transform 0.18s ease;
   cursor: pointer;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: ${({ theme }) => theme.colors.primaryDark};
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    transform: translateY(-1px);
   }
 `;
 
 const SkeletonItem = styled.div`
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-`;
-
-const shimmer = `
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surface};
+  padding: 14px;
 `;
 
 const SkeletonElement = styled.div`
+  border-radius: 8px;
   background: linear-gradient(
     90deg,
-    ${({ theme }) => theme.colors?.skeleton || '#f0f0f0'} 25%,
-    ${({ theme }) => theme.colors?.skeletonHighlight || '#f8f8f8'} 50%,
-    ${({ theme }) => theme.colors?.skeleton || '#f0f0f0'} 75%
+    ${({ theme }) => theme.colors.skeleton} 25%,
+    ${({ theme }) => theme.colors.skeletonHighlight} 50%,
+    ${({ theme }) => theme.colors.skeleton} 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 2s infinite linear;
-  border-radius: 4px;
-  ${shimmer}
-`;
-
-const SkeletonTitle = styled(SkeletonElement)`
-  height: 1.5rem;
-  width: 70%;
-  margin-bottom: 1rem;
-`;
-
-const SkeletonDate = styled(SkeletonElement)`
-  height: 1rem;
-  width: 20%;
-  margin-bottom: 1rem;
-`;
-
-const SkeletonAuthor = styled(SkeletonElement)`
-  height: 1rem;
-  width: 35%;
-  margin-bottom: 0.75rem;
-`;
-
-const SkeletonText = styled(SkeletonElement)<{ width?: string }>`
-  height: 1rem;
-  margin-bottom: 0.5rem;
-  width: ${props => props.width || '100%'};
+  animation: ${shimmer} 1.6s infinite linear;
 `;
 
 const SkeletonHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+  gap: 10px;
+`;
+
+const SkeletonTitle = styled(SkeletonElement)`
+  height: 1.28rem;
+  width: 64%;
+`;
+
+const SkeletonDate = styled(SkeletonElement)`
+  height: 1rem;
+  width: 22%;
+`;
+
+const SkeletonAuthor = styled(SkeletonElement)`
+  margin-top: 10px;
+  height: 0.95rem;
+  width: 32%;
+`;
+
+const SkeletonLine = styled(SkeletonElement)<{ $width?: string }>`
+  margin-top: 8px;
+  height: 0.95rem;
+  width: ${({ $width }) => $width ?? '100%'};
 `;
 
 const SkeletonActions = styled.div`
+  margin-top: 14px;
   display: flex;
   justify-content: flex-end;
-  margin-top: 1.5rem;
+  gap: 8px;
 `;
 
 const SkeletonButton = styled(SkeletonElement)`
-  height: 2rem;
-  width: 6rem;
+  width: 66px;
+  height: 32px;
 `;
 
 const NoticeHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
+  gap: 10px;
 `;
 
 const NoticeTitle = styled.h3`
-  font-size: 1.25rem;
-  margin: 0;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 1rem;
+  line-height: 1.35;
 `;
 
 const NoticeDate = styled.span`
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.colors?.secondaryText || '#666'};
+  color: ${({ theme }) => theme.colors.mutedText};
+  font-size: 0.76rem;
+  white-space: nowrap;
 `;
 
-const NoticeAuthor = styled.div`
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.colors?.secondaryText || '#666'};
-  margin-bottom: 0.75rem;
+const NoticeAuthor = styled.p`
+  margin-top: 8px;
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.8rem;
 `;
 
 const NoticePreview = styled.p`
-  color: ${({ theme }) => theme.colors?.text || '#333'};
-  margin: 0;
+  margin-top: 9px;
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 1rem;
+  line-height: 1.72;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -147,155 +194,115 @@ const NoticePreview = styled.p`
 `;
 
 const NoticeActions = styled.div`
+  margin-top: 12px;
   display: flex;
   justify-content: flex-end;
-  margin-top: 1rem;
+  gap: 8px;
 `;
 
 const ActionButton = styled(Link)`
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.colors?.primary || '#5E81F4'};
-  background-color: transparent;
-  border: 1px solid ${({ theme }) => theme.colors?.primary || '#5E81F4'};
-  margin-left: 0.5rem;
-  transition: all 0.2s ease;
-  z-index: 1;
-  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.78rem;
+  font-weight: 600;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors?.primaryLight || '#EEF1FD'};
+    border-color: ${({ theme }) => theme.colors.cardBorder};
   }
 `;
 
 const DeleteButton = styled.button`
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.colors?.error || '#e74c3c'};
-  background-color: transparent;
-  border: 1px solid ${({ theme }) => theme.colors?.error || '#e74c3c'};
-  margin-left: 0.5rem;
-  transition: all 0.2s ease;
-  z-index: 1;
-  position: relative;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #fef0f0;
-  }
-`;
-
-const AdminActions = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 2rem;
-`;
-
-const CreateButton = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  padding: 0.75rem 1.5rem;
-  background-color: ${({ theme }) => theme.colors?.primary || '#5E81F4'};
-  color: white;
-  border-radius: 4px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors?.primaryDark || '#4B6ED3'};
-  }
-
-  &:before {
-    content: '+';
-    margin-right: 0.5rem;
-    font-size: 1.2rem;
-  }
-`;
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background-color: white;
-  padding: 2rem;
+  min-height: 32px;
+  padding: 0 10px;
   border-radius: 8px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-`;
-
-const ModalTitle = styled.h3`
-  margin-top: 0;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
-`;
-
-const ModalText = styled.p`
-  margin-bottom: 1.5rem;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
-`;
-
-const ModalButtons = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-`;
-
-const CancelButton = styled.button`
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
-  background-color: transparent;
-  border: 1px solid ${({ theme }) => theme.colors?.border || '#ddd'};
-  cursor: pointer;
+  border: 1px solid ${({ theme }) => theme.colors.error};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.error};
+  font-size: 0.78rem;
+  font-weight: 600;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors?.background || '#f5f5f5'};
-  }
-`;
-
-const ConfirmDeleteButton = styled.button`
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  color: white;
-  background-color: ${({ theme }) => theme.colors?.error || '#e74c3c'};
-  border: none;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #c0392b;
+    background: ${({ theme }) => theme.colors.errorLight};
   }
 `;
 
 const NoNotices = styled.div`
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surface};
+  padding: 18px;
   text-align: center;
-  padding: 3rem 0;
-  color: ${({ theme }) => theme.colors?.secondaryText || '#666'};
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.84rem;
 `;
 
-const ErrorMessage = styled.div`
-  color: ${({ theme }) => theme.colors?.error || '#e74c3c'};
-  background-color: #fef0f0;
-  padding: 1rem;
-  border-radius: 4px;
-  margin-bottom: 2rem;
-  text-align: center;
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 10, 16, 0.64);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+`;
+
+const ModalContent = styled.div`
+  width: min(420px, calc(100% - 24px));
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  padding: 18px;
+`;
+
+const ModalTitle = styled.h3`
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 1rem;
+`;
+
+const ModalText = styled.p`
+  margin-top: 8px;
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.85rem;
+`;
+
+const ModalButtons = styled.div`
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+`;
+
+const CancelButton = styled.button`
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.82rem;
+  font-weight: 600;
+`;
+
+const ConfirmDeleteButton = styled.button`
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.error};
+  background: ${({ theme }) => theme.colors.error};
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.errorDark};
+  }
 `;
 
 const formatDate = (dateString: string): string => {
@@ -311,11 +318,10 @@ export const NoticesPage: React.FC = () => {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuthStore();
-  const navigate = useNavigate();
-
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [noticeToDelete, setNoticeToDelete] = useState<number | null>(null);
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   const isAdmin = user?.isAdmin === true;
 
@@ -326,9 +332,9 @@ export const NoticesPage: React.FC = () => {
         const data = await NoticeService.getNotices(isAdmin);
         setNotices(data);
         setError(null);
-      } catch (err) {
+      } catch (fetchError) {
         setError('공지사항을 불러오는 중 오류가 발생했습니다.');
-        console.error('Error fetching notices:', err);
+        console.error('Error fetching notices:', fetchError);
       } finally {
         setLoading(false);
       }
@@ -341,12 +347,12 @@ export const NoticesPage: React.FC = () => {
     navigate(`/notices/${noticeId}`);
   };
 
-  const handleButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleButtonClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
   };
 
-  const handleDeleteClick = (e: React.MouseEvent, noticeId: number) => {
-    e.stopPropagation();
+  const handleDeleteClick = (event: React.MouseEvent, noticeId: number) => {
+    event.stopPropagation();
     setNoticeToDelete(noticeId);
     setIsDeleteModalOpen(true);
   };
@@ -356,11 +362,11 @@ export const NoticesPage: React.FC = () => {
 
     try {
       await NoticeService.deleteNotice(noticeToDelete);
-      setNotices(notices.filter(notice => notice.id !== noticeToDelete));
+      setNotices(prev => prev.filter(notice => notice.id !== noticeToDelete));
       setIsDeleteModalOpen(false);
       setNoticeToDelete(null);
-    } catch (err) {
-      console.error('Error deleting notice:', err);
+    } catch (deleteError) {
+      console.error('Error deleting notice:', deleteError);
       setError('공지사항 삭제 중 오류가 발생했습니다.');
     }
   };
@@ -371,64 +377,46 @@ export const NoticesPage: React.FC = () => {
   };
 
   const renderSkeletons = () => {
-    return Array(3)
-      .fill(0)
-      .map((_, index) => (
-        <SkeletonItem key={`skeleton-${index}`}>
-          <SkeletonHeader>
-            <SkeletonTitle />
-            <SkeletonDate />
-          </SkeletonHeader>
-          <SkeletonAuthor />
-          <SkeletonText width='95%' />
-          <SkeletonText width='90%' />
-          <SkeletonText width='85%' />
-          {isAdmin && (
-            <SkeletonActions>
-              <SkeletonButton />
-            </SkeletonActions>
-          )}
-        </SkeletonItem>
-      ));
+    return Array.from({ length: 3 }, (_, index) => (
+      <SkeletonItem key={`skeleton-${index}`}>
+        <SkeletonHeader>
+          <SkeletonTitle />
+          <SkeletonDate />
+        </SkeletonHeader>
+        <SkeletonAuthor />
+        <SkeletonLine $width='96%' />
+        <SkeletonLine $width='87%' />
+        <SkeletonLine $width='73%' />
+        {isAdmin && (
+          <SkeletonActions>
+            <SkeletonButton />
+            <SkeletonButton />
+          </SkeletonActions>
+        )}
+      </SkeletonItem>
+    ));
   };
 
-  if (loading) {
-    return (
-      <>
-        <NoticesContainer>
+  return (
+    <>
+      <NoticesContainer>
+        <HeaderCard>
           <PageTitle>공지사항</PageTitle>
+          <PageDescription>서비스 업데이트와 운영 공지를 확인할 수 있습니다.</PageDescription>
 
           {isAdmin && (
             <AdminActions>
               <CreateButton to='/notices/new'>새 공지사항 작성</CreateButton>
             </AdminActions>
           )}
-
-          <NoticesList>{renderSkeletons()}</NoticesList>
-        </NoticesContainer>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <NoticesContainer>
-        <PageTitle>공지사항</PageTitle>
+        </HeaderCard>
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
 
-        {isAdmin && (
-          <AdminActions>
-            <CreateButton to='/notices/new'>새 공지사항 작성</CreateButton>
-          </AdminActions>
-        )}
-
         <NoticesList>
-          {notices.length === 0 ? (
-            <NoNotices>
-              <p>등록된 공지사항이 없습니다.</p>
-            </NoNotices>
-          ) : (
+          {loading && renderSkeletons()}
+          {!loading && notices.length === 0 && <NoNotices>등록된 공지사항이 없습니다.</NoNotices>}
+          {!loading &&
             notices.map(notice => (
               <NoticeItem key={notice.id} onClick={() => handleNoticeClick(notice.id)}>
                 <NoticeHeader>
@@ -440,28 +428,19 @@ export const NoticesPage: React.FC = () => {
 
                 <NoticePreview>{notice.content}</NoticePreview>
 
-                <NoticeActions>
-                  {isAdmin && (
-                    <>
-                      <ActionButton to={`/notices/${notice.id}/edit`} onClick={handleButtonClick}>
-                        수정
-                      </ActionButton>
-                      <DeleteButton onClick={e => handleDeleteClick(e, notice.id)}>
-                        삭제
-                      </DeleteButton>
-                    </>
-                  )}
-                </NoticeActions>
+                {isAdmin && (
+                  <NoticeActions>
+                    <ActionButton to={`/notices/${notice.id}/edit`} onClick={handleButtonClick}>
+                      수정
+                    </ActionButton>
+                    <DeleteButton onClick={event => handleDeleteClick(event, notice.id)}>
+                      삭제
+                    </DeleteButton>
+                  </NoticeActions>
+                )}
               </NoticeItem>
-            ))
-          )}
+            ))}
         </NoticesList>
-        <div
-          style={{
-            marginBottom: 'clamp(450px, 30vw, 650px)',
-            width: '100%',
-          }}
-        />
       </NoticesContainer>
 
       {isDeleteModalOpen && (

@@ -7,6 +7,7 @@ export interface User {
   id: number;
   email: string;
   nickname: string;
+  profileImageUrl?: string | null;
   role: 'student' | 'teacher';
   major: 'software' | 'design' | 'web';
   generation?: number;
@@ -17,6 +18,7 @@ export interface User {
 
 interface AuthStore {
   isLoggedIn: boolean;
+  isAuthInitialized: boolean;
   user: User | null;
   login: (accessToken: string, refreshToken: string, userData?: User) => void;
   setUser: (userData: User) => void;
@@ -29,6 +31,7 @@ interface AuthStore {
 
 export const useAuthStore = create<AuthStore>(set => ({
   isLoggedIn: false,
+  isAuthInitialized: false,
   user: null,
   isAuthModalOpen: false,
 
@@ -41,9 +44,9 @@ export const useAuthStore = create<AuthStore>(set => ({
     Cookies.set('refreshToken', refreshToken, { secure: true, sameSite: 'Strict' });
     if (userData) {
       localStorage.setItem('userData', JSON.stringify(userData));
-      set({ isLoggedIn: true, user: userData });
+      set({ isLoggedIn: true, user: userData, isAuthInitialized: true });
     } else {
-      set({ isLoggedIn: true });
+      set({ isLoggedIn: true, isAuthInitialized: true });
     }
   },
 
@@ -56,7 +59,7 @@ export const useAuthStore = create<AuthStore>(set => ({
     Cookies.remove('accessToken');
     localStorage.removeItem('userData');
     logOut();
-    set({ isLoggedIn: false, user: null });
+    set({ isLoggedIn: false, user: null, isAuthInitialized: true });
   },
 
   refreshUser: async () => {
@@ -75,28 +78,33 @@ export const useAuthStore = create<AuthStore>(set => ({
   initializeAuth: async () => {
     const accessToken = Cookies.get('accessToken');
 
-    if (accessToken) {
-      set({ isLoggedIn: true });
+    if (!accessToken) {
+      set({ isLoggedIn: false, user: null, isAuthInitialized: true });
+      return;
+    }
 
-      try {
-        const userDataStr = localStorage.getItem('userData');
-        if (userDataStr) {
-          try {
-            const userData = JSON.parse(userDataStr);
-            set({ user: userData });
-          } catch {
-            console.error('Failed to parse user data from localStorage');
-          }
-        }
+    set({ isLoggedIn: true });
 
-        const userResponse = await getUserInfo();
-        if (userResponse.status === 200 && userResponse.data) {
-          localStorage.setItem('userData', JSON.stringify(userResponse.data));
-          set({ user: userResponse.data });
+    try {
+      const userDataStr = localStorage.getItem('userData');
+      if (userDataStr) {
+        try {
+          const userData = JSON.parse(userDataStr);
+          set({ user: userData });
+        } catch {
+          console.error('Failed to parse user data from localStorage');
         }
-      } catch (error) {
-        console.error('Failed to fetch user info during initialization:', error);
       }
+
+      const userResponse = await getUserInfo();
+      if (userResponse.status === 200 && userResponse.data) {
+        localStorage.setItem('userData', JSON.stringify(userResponse.data));
+        set({ user: userResponse.data });
+      }
+    } catch (error) {
+      console.error('Failed to fetch user info during initialization:', error);
+    } finally {
+      set({ isAuthInitialized: true });
     }
   },
 }));

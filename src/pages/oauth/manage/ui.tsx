@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -26,26 +26,32 @@ export const ManageOAuthAppsPage = () => {
   const [deleting, setDeleting] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuthStore();
+  const { login, logout, setIsAuthModalOpen } = useAuthStore();
 
-  useEffect(() => {
-    fetchApps();
-  }, []);
+  const handleAuthRequired = useCallback(() => {
+    logout();
+    setIsAuthModalOpen(true);
+    setError('로그인이 필요합니다.');
+  }, [logout, setIsAuthModalOpen]);
 
-  const fetchApps = async () => {
+  const isTokenExpired = (status?: number, message?: string) =>
+    status === 401 || message === 'TOKEN_EXPIRED' || message === 'Token expired';
+
+  const fetchApps = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getOAuthApps();
 
       if (data.status === 200) {
         setApps(data.data || []);
-      } else if (data.message === 'TOKEN_EXPIRED') {
+      } else if (isTokenExpired(data.status, data.message)) {
         try {
           const refreshData = await refreshToken();
           login(refreshData.accessToken, refreshData.refreshToken);
           return fetchApps();
         } catch {
-          navigate('/login?redirect=/oauth/manage');
+          handleAuthRequired();
+          return;
         }
       } else {
         setError(data.message || '앱 목록을 불러오는데 실패했습니다.');
@@ -56,7 +62,11 @@ export const ManageOAuthAppsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [handleAuthRequired, login]);
+
+  useEffect(() => {
+    fetchApps();
+  }, [fetchApps]);
 
   const handleDeleteApp = async () => {
     if (!appToDelete) return;
@@ -69,13 +79,14 @@ export const ManageOAuthAppsPage = () => {
         setApps(apps.filter(app => app.id !== appToDelete.id));
         setShowDeleteModal(false);
         setAppToDelete(null);
-      } else if (data.message === 'TOKEN_EXPIRED') {
+      } else if (isTokenExpired(data.status, data.message)) {
         try {
           const refreshData = await refreshToken();
           login(refreshData.accessToken, refreshData.refreshToken);
-          handleDeleteApp();
+          return handleDeleteApp();
         } catch {
-          navigate('/login?redirect=/oauth/manage');
+          handleAuthRequired();
+          return;
         }
       } else {
         setError(data.message || '앱 삭제에 실패했습니다.');
@@ -275,77 +286,83 @@ export const ManageOAuthAppsPage = () => {
 };
 
 const PageContainer = styled.div`
-  max-width: 1200px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 40px 20px;
+  display: grid;
+  gap: 12px;
 `;
 
 const Header = styled.div`
-  margin-bottom: 30px;
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 12px;
+  padding: 18px;
 `;
 
 const Title = styled.h1`
-  font-size: 28px;
-  margin-bottom: 12px;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Description = styled.p`
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors?.secondaryText || '#666'};
-  margin-bottom: 20px;
+  font-size: 0.88rem;
+  color: ${({ theme }) => theme.colors.secondaryText};
+  margin-bottom: 12px;
 `;
 
 const CreateButton = styled.button`
-  background-color: ${({ theme }) => theme.colors?.primary || '#5E81F4'};
+  background-color: ${({ theme }) => theme.colors.primary};
   color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 500;
+  border: 1px solid ${({ theme }) => theme.colors.primaryDark};
+  padding: 0 14px;
+  min-height: 38px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors?.primaryDark || '#4B6ED3'};
+    background-color: ${({ theme }) => theme.colors.primaryDark};
   }
 `;
 
 const AppsSection = styled.div`
-  margin-top: 30px;
+  margin-top: 2px;
 `;
 
 const LoadingMessage = styled.div`
   text-align: center;
-  padding: 40px;
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors?.secondaryText || '#666'};
+  padding: 32px;
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.colors.secondaryText};
 `;
 
 const ErrorMessage = styled.div`
-  background-color: ${({ theme }) => theme.colors?.errorLight || '#FFEBEE'};
-  color: ${({ theme }) => theme.colors?.error || '#D32F2F'};
-  padding: 15px 20px;
-  border-radius: 6px;
-  margin: 20px 0;
+  background-color: ${({ theme }) => theme.colors.errorLight};
+  color: ${({ theme }) => theme.colors.error};
+  border: 1px solid ${({ theme }) => theme.colors.error};
+  padding: 12px 14px;
+  border-radius: 10px;
 `;
 
 const NoAppsMessage = styled.div`
   text-align: center;
-  padding: 60px 20px;
-  background-color: ${({ theme }) => theme.colors?.background || '#f5f5f5'};
-  border-radius: 8px;
+  padding: 44px 20px;
+  background-color: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
 
   p {
     margin: 0 0 15px;
-    color: ${({ theme }) => theme.colors?.secondaryText || '#666'};
-    font-size: 16px;
+    color: ${({ theme }) => theme.colors.secondaryText};
+    font-size: 0.9rem;
 
     &:first-child {
-      font-size: 18px;
-      font-weight: 500;
-      color: ${({ theme }) => theme.colors?.text || '#333'};
+      font-size: 1rem;
+      font-weight: 600;
+      color: ${({ theme }) => theme.colors.text};
     }
   }
 
@@ -357,25 +374,26 @@ const NoAppsMessage = styled.div`
 const AppGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: 14px;
 
-  @media (min-width: 992px) {
+  @media (min-width: 1060px) {
     grid-template-columns: repeat(2, 1fr);
   }
 `;
 
 const AppCard = styled.div`
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
+  background-color: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
   overflow: hidden;
 `;
 
 const AppHeader = styled.div`
   display: flex;
   align-items: center;
-  padding: 20px;
-  background-color: ${({ theme }) => theme.colors?.primaryLight || '#EEF1FD'};
+  padding: 14px 16px;
+  background-color: ${({ theme }) => theme.colors.surfaceElevated};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const AppLogo = styled.div`
@@ -384,7 +402,7 @@ const AppLogo = styled.div`
   border-radius: 8px;
   overflow: hidden;
   margin-right: 15px;
-  background-color: white;
+  background-color: ${({ theme }) => theme.colors.surface};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -401,33 +419,33 @@ const AppInfo = styled.div`
 `;
 
 const AppName = styled.h3`
-  font-size: 18px;
+  font-size: 1.02rem;
   margin: 0 0 5px;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const AppDomain = styled.div`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors?.secondaryText || '#666'};
+  font-size: 0.82rem;
+  color: ${({ theme }) => theme.colors.secondaryText};
 `;
 
 const AppDetails = styled.div`
-  padding: 15px 20px;
+  padding: 14px 16px;
 `;
 
 const DetailItem = styled.div`
   margin-bottom: 12px;
-  font-size: 14px;
+  font-size: 0.86rem;
 `;
 
 const DetailLabel = styled.div`
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 4px;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
+  color: ${({ theme }) => theme.colors.mutedText};
 `;
 
 const DetailValue = styled.div`
-  color: ${({ theme }) => theme.colors?.secondaryText || '#666'};
+  color: ${({ theme }) => theme.colors.text};
   word-break: break-all;
 `;
 
@@ -435,28 +453,30 @@ const SecretContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: ${({ theme }) => theme.colors?.background || '#f5f5f5'};
+  background-color: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: 10px;
 `;
 
 const SecretText = styled.span`
   font-family: 'Courier New', monospace;
-  font-size: 13px;
+  font-size: 0.78rem;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const CopyButton = styled.button`
   background-color: transparent;
-  color: ${({ theme }) => theme.colors?.primary || '#5E81F4'};
-  border: 1px solid ${({ theme }) => theme.colors?.primary || '#5E81F4'};
-  border-radius: 4px;
+  color: ${({ theme }) => theme.colors.primary};
+  border: 1px solid ${({ theme }) => theme.colors.primary};
+  border-radius: 8px;
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: 0.74rem;
   margin-left: 8px;
   cursor: pointer;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors?.primaryLight || '#EEF1FD'};
+    background-color: ${({ theme }) => theme.colors.primaryLight};
   }
 `;
 
@@ -476,37 +496,39 @@ const UrlItem = styled.li`
 
 const AppActions = styled.div`
   display: flex;
-  padding: 15px 20px;
-  border-top: 1px solid ${({ theme }) => theme.colors?.border || '#eee'};
+  padding: 12px 16px;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
 `;
 
 const ActionButton = styled.button`
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 4px;
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 0.82rem;
+  border-radius: 9px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.2s ease;
 `;
 
 const EditButton = styled(ActionButton)`
-  background-color: ${({ theme }) => theme.colors?.primary || '#5E81F4'};
+  background-color: ${({ theme }) => theme.colors.primary};
   color: white;
   border: none;
   margin-right: 10px;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors?.primaryDark || '#4B6ED3'};
+    background-color: ${({ theme }) => theme.colors.primaryDark};
   }
 `;
 
 const DeleteButton = styled(ActionButton)`
-  background-color: white;
-  color: ${({ theme }) => theme.colors?.error || '#D32F2F'};
-  border: 1px solid ${({ theme }) => theme.colors?.error || '#D32F2F'};
+  background-color: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.error};
+  border: 1px solid ${({ theme }) => theme.colors.error};
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors?.errorLight || '#FFEBEE'};
+    background-color: ${({ theme }) => theme.colors.errorLight};
   }
 `;
 
@@ -516,7 +538,7 @@ const ModalOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.62);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -524,26 +546,28 @@ const ModalOverlay = styled.div`
 `;
 
 const Modal = styled.div`
-  background-color: white;
-  border-radius: 8px;
+  background-color: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
   width: 90%;
-  max-width: 500px;
+  max-width: 460px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 `;
 
 const ModalTitle = styled.h3`
   margin: 0;
-  padding: 20px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors?.border || '#eee'};
-  font-size: 18px;
+  padding: 16px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  font-size: 1rem;
 `;
 
 const ModalContent = styled.div`
-  padding: 20px;
+  padding: 16px;
 
   p {
-    margin: 0 0 15px;
+    margin: 0 0 10px;
     line-height: 1.6;
+    color: ${({ theme }) => theme.colors.secondaryText};
 
     &:last-child {
       margin-bottom: 0;
@@ -552,25 +576,26 @@ const ModalContent = styled.div`
 `;
 
 const ModalActions = styled.div`
-  padding: 15px 20px;
+  padding: 12px 16px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  border-top: 1px solid ${({ theme }) => theme.colors?.border || '#eee'};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const CancelButton = styled.button`
-  background-color: white;
-  color: ${({ theme }) => theme.colors?.text || '#333'};
-  border: 1px solid ${({ theme }) => theme.colors?.border || '#ddd'};
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
+  background-color: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.text};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  padding: 0 14px;
+  min-height: 36px;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    background-color: ${({ theme }) => theme.colors?.background || '#f5f5f5'};
+    background-color: ${({ theme }) => theme.colors.background};
   }
 
   &:disabled {
@@ -580,17 +605,18 @@ const CancelButton = styled.button`
 `;
 
 const ConfirmDeleteButton = styled.button`
-  background-color: ${({ theme }) => theme.colors?.error || '#D32F2F'};
+  background-color: ${({ theme }) => theme.colors.error};
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 0 14px;
+  min-height: 36px;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    background-color: ${({ theme }) => theme.colors?.errorDark || '#B71C1C'};
+    background-color: ${({ theme }) => theme.colors.errorDark};
   }
 
   &:disabled {

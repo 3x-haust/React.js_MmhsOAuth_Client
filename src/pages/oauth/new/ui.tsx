@@ -324,37 +324,39 @@ export const NewOAuthAppPage = () => {
 };
 
 const Container = styled.div`
-  max-width: 800px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 40px 20px;
+  display: grid;
+  gap: 12px;
 `;
 
 const FormContainer = styled.div`
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-  padding: 30px;
+  background-color: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 12px;
+  padding: 20px;
 `;
 
 const FormHeader = styled.div`
-  margin-bottom: 30px;
+  margin-bottom: 18px;
 
   h1 {
-    margin: 0 0 10px;
-    font-size: 24px;
+    margin: 0 0 8px;
+    font-size: 1.26rem;
+    color: ${({ theme }) => theme.colors.text};
   }
 
   p {
     margin: 0;
     color: ${({ theme }) => theme.colors.secondaryText};
-    font-size: 16px;
+    font-size: 0.86rem;
   }
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 18px;
 `;
 
 const FormGroup = styled.div``;
@@ -363,87 +365,99 @@ const Label = styled.label`
   display: block;
   font-weight: 600;
   margin-bottom: 8px;
-  font-size: 15px;
+  font-size: 0.86rem;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 12px 15px;
+  padding: 10px 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 5px;
-  font-size: 15px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.text};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.mutedText};
+  }
 
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.ring};
   }
 `;
 
 const Select = styled.select`
   width: 100%;
-  padding: 12px 15px;
+  padding: 10px 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 5px;
-  font-size: 15px;
-  appearance: none;
-  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23131313%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
-  background-repeat: no-repeat;
-  background-position: right 15px top 50%;
-  background-size: 12px auto;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.text};
 
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.ring};
   }
 `;
 
 const CheckboxContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
+  gap: 10px;
 `;
 
-const CheckboxGroup = styled.div``;
+const CheckboxGroup = styled.div`
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 10px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  padding: 10px;
+`;
 
 const CheckboxLabel = styled.label`
   display: flex;
   align-items: center;
   cursor: pointer;
-  font-weight: 500;
-  font-size: 15px;
+  font-weight: 600;
+  font-size: 0.86rem;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const Checkbox = styled.input`
   margin-right: 10px;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
 `;
 
 const HelpText = styled.div`
-  margin-top: 4px;
-  margin-left: 28px;
-  font-size: 13px;
+  margin-top: 5px;
+  margin-left: 26px;
+  font-size: 0.76rem;
   color: ${({ theme }) => theme.colors.secondaryText};
+  line-height: 1.4;
 `;
 
 const HelperText = styled.div`
   margin-top: 8px;
-  font-size: 13px;
+  font-size: 0.78rem;
   color: ${({ theme }) => theme.colors.secondaryText};
+  line-height: 1.4;
 `;
 
 const RedirectContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 `;
 
 const RedirectInputGroup = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 8px;
 `;
 
 const RedirectInput = styled(Input)`
@@ -451,11 +465,14 @@ const RedirectInput = styled(Input)`
 `;
 
 const RemoveButton = styled.button`
-  padding: 0 15px;
+  min-height: 38px;
+  padding: 0 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 5px;
-  background: white;
+  border-radius: 9px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   color: ${({ theme }) => theme.colors.error};
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
 
   &:hover:not(:disabled) {
@@ -470,12 +487,14 @@ const RemoveButton = styled.button`
 
 const AddButton = styled.button`
   align-self: flex-start;
-  padding: 8px 15px;
-  background-color: white;
+  min-height: 34px;
+  padding: 0 12px;
+  background-color: ${({ theme }) => theme.colors.surfaceElevated};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 5px;
+  border-radius: 9px;
   color: ${({ theme }) => theme.colors.primary};
-  font-size: 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
 
   &:hover {
@@ -486,15 +505,16 @@ const AddButton = styled.button`
 const ButtonGroup = styled.div`
   display: flex;
   justify-content: flex-end;
-  gap: 15px;
-  margin-top: 20px;
+  gap: 10px;
+  margin-top: 2px;
 `;
 
 const Button = styled.button`
-  padding: 12px 25px;
-  border-radius: 5px;
-  font-size: 16px;
-  font-weight: 500;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 `;
@@ -502,7 +522,7 @@ const Button = styled.button`
 const SubmitButton = styled(Button)`
   background-color: ${({ theme }) => theme.colors.primary};
   color: white;
-  border: none;
+  border: 1px solid ${({ theme }) => theme.colors.primaryDark};
 
   &:hover:not(:disabled) {
     background-color: ${({ theme }) => theme.colors.primaryDark};
@@ -515,19 +535,21 @@ const SubmitButton = styled(Button)`
 `;
 
 const CancelButton = styled(Button)`
-  background-color: white;
+  background-color: ${({ theme }) => theme.colors.surfaceElevated};
   border: 1px solid ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.text};
 
   &:hover {
-    background-color: #f5f5f5;
+    background-color: ${({ theme }) => theme.colors.background};
   }
 `;
 
 const ErrorMessage = styled.div`
   background-color: ${({ theme }) => theme.colors.errorLight};
+  border: 1px solid ${({ theme }) => theme.colors.error};
   color: ${({ theme }) => theme.colors.error};
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 20px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 0.83rem;
 `;

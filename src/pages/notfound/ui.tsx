@@ -28,6 +28,7 @@ const NotFoundContainer = styled.div`
   text-align: center;
   max-width: 600px;
   margin: 0 auto;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const ErrorCode = styled.h1`
@@ -46,7 +47,7 @@ const ErrorCode = styled.h1`
     top: 0.2rem;
     left: 0.2rem;
     opacity: 0.1;
-    color: #000;
+    color: ${({ theme }) => theme.colors.text};
     z-index: -1;
   }
 `;
@@ -54,14 +55,14 @@ const ErrorCode = styled.h1`
 const Title = styled.h2`
   font-size: 2rem;
   margin: 1rem 0;
-  color: #333;
+  color: ${({ theme }) => theme.colors.text};
   opacity: 0;
   animation: ${fadeIn} 0.6s ease-out 0.4s forwards;
 `;
 
 const Description = styled.p`
   font-size: 1.2rem;
-  color: #666;
+  color: ${({ theme }) => theme.colors.secondaryText};
   margin-bottom: 2rem;
   opacity: 0;
   animation: ${fadeIn} 0.6s ease-out 0.6s forwards;
@@ -80,9 +81,9 @@ const HomeButton = styled.button`
   animation: ${fadeIn} 0.6s ease-out 1s forwards;
 
   &:hover {
-    background-color: ${props => props.theme.colors.primaryDark || '#0056b3'};
+    background-color: ${props => props.theme.colors.primaryDark};
     transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
   }
 `;
 
@@ -98,7 +99,7 @@ const Illustration = styled.div`
 const RecentVisited = styled.div`
   margin-top: 3rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
   width: 100%;
   opacity: 0;
   animation: ${fadeIn} 0.6s ease-out 1.2s forwards;
@@ -106,14 +107,15 @@ const RecentVisited = styled.div`
 
 const RecentTitle = styled.h3`
   font-size: 1.2rem;
-  color: #555;
+  color: ${({ theme }) => theme.colors.text};
   margin-bottom: 1rem;
 `;
 
 const RecentLink = styled.div`
   margin: 0.5rem 0;
   padding: 0.8rem 1rem;
-  background-color: #f8f9fa;
+  background-color: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -122,18 +124,19 @@ const RecentLink = styled.div`
   justify-content: space-between;
 
   &:hover {
-    background-color: #e9ecef;
+    background-color: ${({ theme }) => theme.colors.surface};
+    border-color: ${({ theme }) => theme.colors.cardBorder};
     animation: ${pulse} 0.5s ease-in-out;
   }
 `;
 
 const PageName = styled.span`
   font-weight: 500;
-  color: #333;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const PagePath = styled.span`
-  color: #6c757d;
+  color: ${({ theme }) => theme.colors.mutedText};
   font-size: 0.9rem;
 `;
 
@@ -150,8 +153,9 @@ export const NotFoundPage = () => {
     try {
       const recentVisits = localStorage.getItem('recentPages');
       if (recentVisits) {
-        const pages = JSON.parse(recentVisits);
-        setRecentPages(pages.slice(0, 3));
+        const pages = JSON.parse(recentVisits) as RecentPage[];
+        const filtered = pages.filter(page => !page.path.startsWith('/oauth'));
+        setRecentPages(filtered.slice(0, 3));
       }
     } catch (error) {
       console.error('Failed to load recent pages:', error);
