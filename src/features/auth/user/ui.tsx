@@ -335,13 +335,18 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               } catch (userInfoError) {
                 console.error('Failed to fetch user info:', userInfoError);
               }
+
+              onClose();
+              window.location.reload();
+              return;
             } else {
               showError('로그인 데이터가 올바르지 않습니다');
+              return;
             }
           } else {
             showError('로그인 실패');
+            return;
           }
-          onClose();
           break;
         }
 
