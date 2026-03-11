@@ -33,6 +33,10 @@ interface ApiResponse<T> {
   data: T;
 }
 
+interface NoticeImageUploadResponse {
+  url: string;
+}
+
 export const NoticeService = {
   async getNotices(includeInactive = false): Promise<Notice[]> {
     return executeWithTokenRefresh(async token => {
@@ -177,6 +181,37 @@ export const NoticeService = {
       }
 
       throw new Error(result.message || `Failed to delete notice #${id}`);
+    });
+  },
+
+  async uploadNoticeImage(file: File): Promise<string> {
+    return executeWithTokenRefresh(async token => {
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch(`${API_URL}/api/v1/notice/image`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const result = (await response.json()) as ApiResponse<NoticeImageUploadResponse>;
+
+      if (response.ok && result.data?.url) {
+        return result.data.url;
+      }
+
+      if (result.message === 'TOKEN_EXPIRED') {
+        throw new Error('TOKEN_EXPIRED');
+      }
+
+      throw new Error(result.message || 'Failed to upload notice image');
     });
   },
 };

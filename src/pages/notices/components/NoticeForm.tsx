@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 import rehypeRaw from 'rehype-raw';
@@ -10,6 +10,7 @@ import {
   Notice,
   CreateNoticeRequest,
   UpdateNoticeRequest,
+  NoticeService,
 } from '@/features/notice/api/noticeService';
 
 interface NoticeFormProps {
@@ -223,6 +224,16 @@ const MarkdownPreview = styled.div`
   }
 `;
 
+const UploadStateText = styled.p`
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: 0.78rem;
+`;
+
+const UploadErrorText = styled.p`
+  color: ${({ theme }) => theme.colors.error};
+  font-size: 0.78rem;
+`;
+
 const CheckboxGroup = styled.label`
   display: inline-flex;
   align-items: center;
@@ -285,6 +296,9 @@ export const NoticeForm: React.FC<NoticeFormProps> = ({ initialData, onSubmit, i
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isActive, setIsActive] = useState(true);
+  const [isImageUploading, setIsImageUploading] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState('');
+  const contentRef = useRef<HTMLTextAreaElement | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -325,6 +339,63 @@ export const NoticeForm: React.FC<NoticeFormProps> = ({ initialData, onSubmit, i
     }
   };
 
+  const insertAtCursor = (insertText: string) => {
+    const target = contentRef.current;
+    if (!target) {
+      setContent(prev => `${prev}${prev.endsWith('\n') ? '' : '\n'}${insertText}`);
+      return;
+    }
+
+    const start = target.selectionStart;
+    const end = target.selectionEnd;
+    const current = content;
+    const before = current.slice(0, start);
+    const after = current.slice(end);
+    const needsLeadingNewline = before.length > 0 && !before.endsWith('\n');
+    const needsTrailingNewline = after.length > 0 && !after.startsWith('\n');
+    const inserted = `${needsLeadingNewline ? '\n' : ''}${insertText}${
+      needsTrailingNewline ? '\n' : ''
+    }`;
+    const nextValue = `${before}${inserted}${after}`;
+
+    setContent(nextValue);
+
+    requestAnimationFrame(() => {
+      const nextCursor = before.length + inserted.length;
+      target.focus();
+      target.setSelectionRange(nextCursor, nextCursor);
+    });
+  };
+
+  const handlePasteImage = async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const imageItem = Array.from(event.clipboardData.items).find(item => {
+      return item.kind === 'file' && item.type.startsWith('image/');
+    });
+
+    if (!imageItem) {
+      return;
+    }
+
+    const file = imageItem.getAsFile();
+    if (!file) {
+      return;
+    }
+
+    event.preventDefault();
+    setImageUploadError('');
+    setIsImageUploading(true);
+
+    try {
+      const imageUrl = await NoticeService.uploadNoticeImage(file);
+      insertAtCursor(`![공지 이미지](${imageUrl})`);
+    } catch (uploadError) {
+      console.error('Failed to upload pasted notice image:', uploadError);
+      setImageUploadError('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsImageUploading(false);
+    }
+  };
+
   return (
     <Form onSubmit={handleSubmit}>
       <FormGroup>
@@ -343,8 +414,10 @@ export const NoticeForm: React.FC<NoticeFormProps> = ({ initialData, onSubmit, i
         <Label htmlFor='content'>내용</Label>
         <Textarea
           id='content'
+          ref={contentRef}
           value={content}
           onChange={event => setContent(event.target.value)}
+          onPaste={handlePasteImage}
           placeholder='내용을 입력하세요'
           required
         />
@@ -352,6 +425,9 @@ export const NoticeForm: React.FC<NoticeFormProps> = ({ initialData, onSubmit, i
           마크다운을 지원합니다. 줄바꿈 태그({`<br />`}), 이미지({`![설명](이미지URL)`}), 표,
           코드블록을 사용할 수 있습니다.
         </GuideText>
+        <GuideText>이미지를 붙여넣기하면 자동 업로드되어 본문에 링크가 삽입됩니다.</GuideText>
+        {isImageUploading && <UploadStateText>이미지를 업로드하고 있습니다...</UploadStateText>}
+        {imageUploadError && <UploadErrorText>{imageUploadError}</UploadErrorText>}
       </FormGroup>
 
       <FormGroup>
