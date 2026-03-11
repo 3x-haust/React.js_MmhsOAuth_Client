@@ -39,6 +39,10 @@ const Label = styled.p`
   margin-bottom: 8px;
 `;
 
+const SearchForm = styled.form`
+  display: block;
+`;
+
 const Input = styled.input`
   width: 100%;
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -56,6 +60,55 @@ const Input = styled.input`
     border-color: ${({ theme }) => theme.colors.primaryDark};
     box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.ring};
   }
+`;
+
+const RecentSection = styled.section`
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+`;
+
+const RecentHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+`;
+
+const RecentTitle = styled.p`
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.mutedText};
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+`;
+
+const ClearButton = styled.button`
+  min-height: 26px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.72rem;
+  font-weight: 600;
+`;
+
+const RecentList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+const RecentItem = styled.button`
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.76rem;
+  font-weight: 600;
 `;
 
 const Info = styled.p<{ $error?: boolean }>`
@@ -460,14 +513,66 @@ const getDetailHref = (target: SearchUser): string => {
   return `/user-search/detail?data=${encodeURIComponent(payload)}`;
 };
 
+const RECENT_SEARCH_KEY = 'mmhs-user-search-recent';
+const MAX_RECENT_SEARCHES = 8;
+
+const loadRecentSearches = (): string[] => {
+  try {
+    const raw = localStorage.getItem(RECENT_SEARCH_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(item => typeof item === 'string')
+      .map(item => item.trim())
+      .filter(item => item.length > 0)
+      .slice(0, MAX_RECENT_SEARCHES);
+  } catch {
+    return [];
+  }
+};
+
+const saveRecentSearches = (keywords: string[]) => {
+  try {
+    localStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(keywords));
+  } catch {
+    return;
+  }
+};
+
 export const UserSearchPage: React.FC = () => {
   const { isLoggedIn } = useAuthStore();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   const keyword = useMemo(() => query.trim(), [query]);
+
+  const pushRecentSearch = (value: string) => {
+    const normalized = value.trim();
+    if (!normalized) return;
+    const next = [normalized, ...recentSearches.filter(item => item !== normalized)].slice(
+      0,
+      MAX_RECENT_SEARCHES
+    );
+    setRecentSearches(next);
+    saveRecentSearches(next);
+  };
+
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    saveRecentSearches([]);
+  };
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setRecentSearches([]);
+      return;
+    }
+    setRecentSearches(loadRecentSearches());
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -506,18 +611,50 @@ export const UserSearchPage: React.FC = () => {
     <Container>
       <Card>
         <Label>검색할 유저의 닉네임 또는 이메일</Label>
-        <Input
-          value={query}
-          onChange={event => setQuery(event.target.value)}
-          placeholder='닉네임 또는 이메일을 입력하세요'
-        />
+        <SearchForm
+          onSubmit={event => {
+            event.preventDefault();
+            if (!keyword) return;
+            pushRecentSearch(keyword);
+          }}
+        >
+          <Input
+            value={query}
+            onChange={event => setQuery(event.target.value)}
+            placeholder='닉네임 또는 이메일을 입력하세요'
+          />
+        </SearchForm>
+
+        {isLoggedIn && keyword === '' && recentSearches.length > 0 && (
+          <RecentSection>
+            <RecentHeader>
+              <RecentTitle>최근 검색</RecentTitle>
+              <ClearButton type='button' onClick={clearRecentSearches}>
+                전체 삭제
+              </ClearButton>
+            </RecentHeader>
+            <RecentList>
+              {recentSearches.map(item => (
+                <RecentItem
+                  key={item}
+                  type='button'
+                  onClick={() => {
+                    setQuery(item);
+                  }}
+                >
+                  {item}
+                </RecentItem>
+              ))}
+            </RecentList>
+          </RecentSection>
+        )}
 
         {!isLoggedIn && <Info $error>로그인 후 사용할 수 있습니다.</Info>}
         {isLoggedIn && loading && <Info>유저 데이터를 불러오는 중입니다.</Info>}
         {error && <Info $error>{error}</Info>}
 
         {keyword !== '' && isLoggedIn && !loading && !error && results.length === 0 && (
-          <Info>해당 닉네임의 유저를 찾을 수 없습니다.</Info>
+          <Info>해당 닉네임 또는 이메일의 유저를 찾을 수 없습니다.</Info>
         )}
 
         {results.length > 0 && (
@@ -547,7 +684,14 @@ export const UserSearchPage: React.FC = () => {
 
                     <BadgeGroup>
                       {target.isAdmin && <Badge>관리자</Badge>}
-                      <OpenDetailLink to={detailHref}>세부사항</OpenDetailLink>
+                      <OpenDetailLink
+                        to={detailHref}
+                        onClick={() => {
+                          pushRecentSearch(keyword || target.nickname);
+                        }}
+                      >
+                        세부사항
+                      </OpenDetailLink>
                     </BadgeGroup>
                   </UserSummaryRow>
                 </UserItem>
