@@ -45,15 +45,17 @@ const SearchForm = styled.form`
 
 const SearchContainer = styled.div`
   position: relative;
+  margin-top: 6px;
 `;
 
 const Input = styled.input`
   width: 100%;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.surfaceElevated};
+  min-height: 50px;
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.text};
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 12px;
+  padding: 0 14px;
   font-size: 0.95rem;
 
   &::placeholder {
@@ -61,18 +63,19 @@ const Input = styled.input`
   }
 
   &:focus {
-    border-color: ${({ theme }) => theme.colors.primaryDark};
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.ring};
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 1px ${({ theme }) => theme.colors.primary};
   }
 `;
 
 const RecentSection = styled.section`
-  margin-top: 8px;
+  margin-top: 0;
   display: grid;
-  gap: 8px;
+  gap: 10px;
 `;
 
 const RecentHeader = styled.div`
+  padding: 0 4px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -88,11 +91,11 @@ const RecentTitle = styled.p`
 `;
 
 const ClearButton = styled.button`
-  min-height: 26px;
-  padding: 0 8px;
+  min-height: 28px;
+  padding: 0 10px;
   border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.surfaceElevated};
+  background: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.secondaryText};
   font-size: 0.72rem;
   font-weight: 600;
@@ -100,32 +103,33 @@ const ClearButton = styled.button`
 
 const RecentDropdown = styled.div`
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 14px);
   left: 0;
   right: 0;
   z-index: 10;
   border: 1px solid ${({ theme }) => theme.colors.cardBorder};
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
 `;
 
 const RecentList = styled.ul`
   display: grid;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
 `;
 
 const RecentItem = styled.li`
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-
-  &:first-child {
-    border-top: 0;
-  }
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 10px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
 `;
 
 const RecentItemRow = styled.div`
-  min-height: 56px;
-  padding: 8px 10px;
+  min-height: 58px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -142,8 +146,8 @@ const RecentUserLink = styled(Link)`
 `;
 
 const RecentRemoveButton = styled.button`
-  min-width: 28px;
-  min-height: 28px;
+  min-width: 30px;
+  min-height: 30px;
   border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.surface};
@@ -154,7 +158,7 @@ const RecentRemoveButton = styled.button`
 `;
 
 const EmptyRecent = styled.p`
-  padding: 12px;
+  padding: 14px 8px;
   color: ${({ theme }) => theme.colors.mutedText};
   font-size: 0.8rem;
 `;
@@ -166,7 +170,7 @@ const Info = styled.p<{ $error?: boolean }>`
 `;
 
 const UserList = styled.ul`
-  margin-top: 12px;
+  margin-top: 16px;
   display: grid;
   gap: 9px;
 `;
