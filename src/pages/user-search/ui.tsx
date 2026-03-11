@@ -43,6 +43,10 @@ const SearchForm = styled.form`
   display: block;
 `;
 
+const SearchContainer = styled.div`
+  position: relative;
+`;
+
 const Input = styled.input`
   width: 100%;
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -63,7 +67,7 @@ const Input = styled.input`
 `;
 
 const RecentSection = styled.section`
-  margin-top: 10px;
+  margin-top: 8px;
   display: grid;
   gap: 8px;
 `;
@@ -94,21 +98,65 @@ const ClearButton = styled.button`
   font-weight: 600;
 `;
 
-const RecentList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+const RecentDropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
 `;
 
-const RecentItem = styled.button`
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.surfaceElevated};
+const RecentList = styled.ul`
+  display: grid;
+`;
+
+const RecentItem = styled.li`
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+
+  &:first-child {
+    border-top: 0;
+  }
+`;
+
+const RecentItemRow = styled.div`
+  min-height: 56px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+const RecentUserLink = styled(Link)`
+  min-width: 0;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   color: ${({ theme }) => theme.colors.text};
-  font-size: 0.76rem;
-  font-weight: 600;
+`;
+
+const RecentRemoveButton = styled.button`
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.secondaryText};
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1;
+`;
+
+const EmptyRecent = styled.p`
+  padding: 12px;
+  color: ${({ theme }) => theme.colors.mutedText};
+  font-size: 0.8rem;
 `;
 
 const Info = styled.p<{ $error?: boolean }>`
@@ -423,6 +471,151 @@ const searchUsers = async (keyword: string): Promise<SearchUser[]> => {
   });
 };
 
+const MAX_RECENT_SEARCHES = 8;
+
+const normalizeRecentUsers = (payload: unknown): SearchUser[] => {
+  if (!Array.isArray(payload)) {
+    return [];
+  }
+
+  const deduped = new Map<number, SearchUser>();
+  payload.forEach(item => {
+    const candidate = toRecord(item);
+    if (!candidate) {
+      return;
+    }
+
+    const id = toNumber(candidate.targetUserId ?? candidate.id ?? candidate.userId);
+    const nickname = toStringValue(candidate.nickname ?? candidate.name);
+    if (id === null || !nickname) {
+      return;
+    }
+
+    deduped.set(id, {
+      id,
+      nickname,
+      email: toStringValue(candidate.email) ?? '',
+      profileImageUrl:
+        toStringValue(
+          candidate.profileImageUrl ??
+            candidate.avatarUrl ??
+            candidate.profileImage ??
+            candidate.imageUrl
+        ) ?? null,
+      isAdmin: toBoolean(candidate.isAdmin),
+      role: toStringValue(candidate.role),
+      major: toStringValue(candidate.major),
+      admission: toStringValue(candidate.admission) ?? toNumber(candidate.admission) ?? undefined,
+      generation:
+        toStringValue(candidate.generation) ?? toNumber(candidate.generation) ?? undefined,
+      isGraduated: toBoolean(candidate.isGraduated),
+    });
+  });
+
+  return [...deduped.values()].slice(0, MAX_RECENT_SEARCHES);
+};
+
+const fetchRecentSearchedUsers = async (): Promise<SearchUser[]> => {
+  return executeWithTokenRefresh(async token => {
+    if (!token) return [];
+
+    const response = await fetch(`${API_URL}/api/v1/user/search/history`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = (await response.json()) as { message?: string; data?: unknown };
+
+    if (result?.message === 'TOKEN_EXPIRED') {
+      throw new Error('TOKEN_EXPIRED');
+    }
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return normalizeRecentUsers(result.data);
+  });
+};
+
+const saveRecentSearchedUser = async (targetUserId: number): Promise<SearchUser[]> => {
+  return executeWithTokenRefresh(async token => {
+    if (!token) return [];
+
+    const response = await fetch(`${API_URL}/api/v1/user/search/history`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ targetUserId }),
+    });
+
+    const result = (await response.json()) as { message?: string; data?: unknown };
+
+    if (result?.message === 'TOKEN_EXPIRED') {
+      throw new Error('TOKEN_EXPIRED');
+    }
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return normalizeRecentUsers(result.data);
+  });
+};
+
+const removeRecentSearchedUser = async (targetUserId: number): Promise<void> => {
+  return executeWithTokenRefresh(async token => {
+    if (!token) return;
+
+    const response = await fetch(`${API_URL}/api/v1/user/search/history/${targetUserId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = (await response.json()) as { message?: string };
+
+    if (result?.message === 'TOKEN_EXPIRED') {
+      throw new Error('TOKEN_EXPIRED');
+    }
+
+    if (!response.ok) {
+      throw new Error(result?.message || '최근 검색 유저 삭제에 실패했습니다.');
+    }
+  });
+};
+
+const clearRecentSearchedUsersFromServer = async (): Promise<void> => {
+  return executeWithTokenRefresh(async token => {
+    if (!token) return;
+
+    const response = await fetch(`${API_URL}/api/v1/user/search/history`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = (await response.json()) as { message?: string };
+
+    if (result?.message === 'TOKEN_EXPIRED') {
+      throw new Error('TOKEN_EXPIRED');
+    }
+
+    if (!response.ok) {
+      throw new Error(result?.message || '최근 검색 유저 삭제에 실패했습니다.');
+    }
+  });
+};
+
 const getRoleLabel = (role?: string): string => {
   if (!role) return '-';
   if (role === 'student') return '학생';
@@ -513,71 +706,90 @@ const getDetailHref = (target: SearchUser): string => {
   return `/user-search/detail?data=${encodeURIComponent(payload)}`;
 };
 
-const RECENT_SEARCH_KEY = 'mmhs-user-search-recent';
-const MAX_RECENT_SEARCHES = 8;
-
-const loadRecentSearches = (): string[] => {
-  try {
-    const raw = localStorage.getItem(RECENT_SEARCH_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter(item => typeof item === 'string')
-      .map(item => item.trim())
-      .filter(item => item.length > 0)
-      .slice(0, MAX_RECENT_SEARCHES);
-  } catch {
-    return [];
-  }
-};
-
-const saveRecentSearches = (keywords: string[]) => {
-  try {
-    localStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(keywords));
-  } catch {
-    return;
-  }
-};
-
 export const UserSearchPage: React.FC = () => {
   const { isLoggedIn } = useAuthStore();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentUsers, setRecentUsers] = useState<SearchUser[]>([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const keyword = useMemo(() => query.trim(), [query]);
 
-  const pushRecentSearch = (value: string) => {
-    const normalized = value.trim();
-    if (!normalized) return;
-    const next = [normalized, ...recentSearches.filter(item => item !== normalized)].slice(
-      0,
-      MAX_RECENT_SEARCHES
-    );
-    setRecentSearches(next);
-    saveRecentSearches(next);
+  const recordRecentUser = async (targetUser: SearchUser) => {
+    if (!targetUser?.id) {
+      return;
+    }
+
+    setRecentUsers(prev => {
+      const next = [targetUser, ...prev.filter(item => item.id !== targetUser.id)];
+      return next.slice(0, MAX_RECENT_SEARCHES);
+    });
+
+    try {
+      const savedUsers = await saveRecentSearchedUser(targetUser.id);
+      if (savedUsers.length > 0) {
+        setRecentUsers(savedUsers);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const clearRecentSearches = () => {
-    setRecentSearches([]);
-    saveRecentSearches([]);
+  const clearRecentSearchedUsers = async () => {
+    const previousUsers = [...recentUsers];
+    setRecentUsers([]);
+    try {
+      await clearRecentSearchedUsersFromServer();
+    } catch (error) {
+      console.error(error);
+      setRecentUsers(previousUsers);
+    }
+  };
+
+  const removeRecentUser = async (targetUserId: number) => {
+    const previousUsers = [...recentUsers];
+    setRecentUsers(prev => prev.filter(user => user.id !== targetUserId));
+    try {
+      await removeRecentSearchedUser(targetUserId);
+    } catch (error) {
+      console.error(error);
+      setRecentUsers(previousUsers);
+    }
   };
 
   useEffect(() => {
     if (!isLoggedIn) {
-      setRecentSearches([]);
+      setRecentUsers([]);
       return;
     }
-    setRecentSearches(loadRecentSearches());
+
+    let isMounted = true;
+
+    const loadRecentUsers = async () => {
+      try {
+        const users = await fetchRecentSearchedUsers();
+        if (isMounted) {
+          setRecentUsers(users);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    void loadRecentUsers();
+
+    return () => {
+      isMounted = false;
+    };
   }, [isLoggedIn]);
 
   useEffect(() => {
     if (!isLoggedIn) {
       setResults([]);
       setLoading(false);
+      setIsSearchFocused(false);
       return;
     }
 
@@ -607,47 +819,105 @@ export const UserSearchPage: React.FC = () => {
     };
   }, [isLoggedIn, keyword]);
 
+  const showRecentDropdown = isLoggedIn && isSearchFocused && keyword === '';
+
   return (
     <Container>
       <Card>
         <Label>검색할 유저의 닉네임 또는 이메일</Label>
-        <SearchForm
-          onSubmit={event => {
-            event.preventDefault();
-            if (!keyword) return;
-            pushRecentSearch(keyword);
-          }}
-        >
-          <Input
-            value={query}
-            onChange={event => setQuery(event.target.value)}
-            placeholder='닉네임 또는 이메일을 입력하세요'
-          />
-        </SearchForm>
+        <SearchContainer>
+          <SearchForm
+            onSubmit={event => {
+              event.preventDefault();
+            }}
+          >
+            <Input
+              value={query}
+              onChange={event => setQuery(event.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+              placeholder='닉네임 또는 이메일을 입력하세요'
+            />
+          </SearchForm>
 
-        {isLoggedIn && keyword === '' && recentSearches.length > 0 && (
-          <RecentSection>
-            <RecentHeader>
-              <RecentTitle>최근 검색</RecentTitle>
-              <ClearButton type='button' onClick={clearRecentSearches}>
-                전체 삭제
-              </ClearButton>
-            </RecentHeader>
-            <RecentList>
-              {recentSearches.map(item => (
-                <RecentItem
-                  key={item}
-                  type='button'
-                  onClick={() => {
-                    setQuery(item);
-                  }}
-                >
-                  {item}
-                </RecentItem>
-              ))}
-            </RecentList>
-          </RecentSection>
-        )}
+          {showRecentDropdown && (
+            <RecentDropdown
+              onMouseDown={event => {
+                event.preventDefault();
+              }}
+            >
+              <RecentSection>
+                <RecentHeader>
+                  <RecentTitle>최근 검색 유저</RecentTitle>
+                  {recentUsers.length > 0 && (
+                    <ClearButton
+                      type='button'
+                      onClick={() => {
+                        void clearRecentSearchedUsers();
+                      }}
+                    >
+                      전체 삭제
+                    </ClearButton>
+                  )}
+                </RecentHeader>
+
+                {recentUsers.length === 0 && (
+                  <EmptyRecent>최근 검색한 유저가 없습니다.</EmptyRecent>
+                )}
+
+                {recentUsers.length > 0 && (
+                  <RecentList>
+                    {recentUsers.map(target => {
+                      const userKey = `recent-${target.id}-${target.nickname}`;
+                      const profileImageUrl = resolveProfileImageUrl(target.profileImageUrl);
+                      const detailHref = getDetailHref(target);
+
+                      return (
+                        <RecentItem key={userKey}>
+                          <RecentItemRow>
+                            <RecentUserLink
+                              to={detailHref}
+                              onClick={() => {
+                                setIsSearchFocused(false);
+                                void recordRecentUser(target);
+                              }}
+                            >
+                              <Avatar>
+                                {profileImageUrl ? (
+                                  <AvatarImage
+                                    src={profileImageUrl}
+                                    alt={`${target.nickname} 프로필`}
+                                  />
+                                ) : (
+                                  <span>{getAvatarText(target.nickname)}</span>
+                                )}
+                              </Avatar>
+
+                              <UserText>
+                                <UserName>{target.nickname}</UserName>
+                                <UserMeta>{target.email || '이메일 정보 없음'}</UserMeta>
+                              </UserText>
+                            </RecentUserLink>
+
+                            <RecentRemoveButton
+                              type='button'
+                              aria-label={`${target.nickname} 최근 검색 삭제`}
+                              onClick={() => {
+                                void removeRecentUser(target.id);
+                              }}
+                            >
+                              ×
+                            </RecentRemoveButton>
+                          </RecentItemRow>
+                        </RecentItem>
+                      );
+                    })}
+                  </RecentList>
+                )}
+              </RecentSection>
+            </RecentDropdown>
+          )}
+        </SearchContainer>
 
         {!isLoggedIn && <Info $error>로그인 후 사용할 수 있습니다.</Info>}
         {isLoggedIn && loading && <Info>유저 데이터를 불러오는 중입니다.</Info>}
@@ -687,7 +957,7 @@ export const UserSearchPage: React.FC = () => {
                       <OpenDetailLink
                         to={detailHref}
                         onClick={() => {
-                          pushRecentSearch(keyword || target.nickname);
+                          void recordRecentUser(target);
                         }}
                       >
                         세부사항
