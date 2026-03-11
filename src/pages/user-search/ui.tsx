@@ -138,7 +138,7 @@ const BadgeGroup = styled.div`
   align-items: center;
 `;
 
-const OpenDetailLink = styled.a`
+const OpenDetailLink = styled(Link)`
   display: inline-flex;
   align-items: center;
   min-height: 28px;
@@ -333,49 +333,36 @@ const normalizeUsers = (payload: unknown): SearchUser[] => {
   return [...deduped.values()];
 };
 
-const fetchByNickname = async (keyword: string): Promise<SearchUser[]> => {
+const searchUsers = async (keyword: string): Promise<SearchUser[]> => {
   return executeWithTokenRefresh(async token => {
     if (!token) return [];
 
     const encodedKeyword = encodeURIComponent(keyword);
-    const endpoints = [
-      `${API_URL}/api/v1/user/search?nickname=${encodedKeyword}`,
-      `${API_URL}/api/v1/user/search?query=${encodedKeyword}`,
-      `${API_URL}/api/v1/user/search?q=${encodedKeyword}`,
-      `${API_URL}/api/v1/user/search/${encodedKeyword}`,
-      `${API_URL}/api/v1/users/search?nickname=${encodedKeyword}`,
-      `${API_URL}/api/v1/users/search?query=${encodedKeyword}`,
-      `${API_URL}/api/v1/user-search?nickname=${encodedKeyword}`,
-    ];
+    const endpoint = `${API_URL}/api/v1/user/search?query=${encodedKeyword}`;
 
-    for (const endpoint of endpoints) {
-      try {
-        const response = await fetch(endpoint, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    try {
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        const result = (await response.json()) as { message?: string; data?: unknown };
+      const result = (await response.json()) as { message?: string; data?: unknown };
 
-        if (result?.message === 'TOKEN_EXPIRED') {
-          throw new Error('TOKEN_EXPIRED');
-        }
+      if (result?.message === 'TOKEN_EXPIRED') {
+        throw new Error('TOKEN_EXPIRED');
+      }
 
-        if (!response.ok) {
-          continue;
-        }
+      if (!response.ok) {
+        return [];
+      }
 
-        const users = normalizeUsers(result?.data ?? result);
-        if (users.length > 0) {
-          return users;
-        }
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('TOKEN_EXPIRED')) {
-          throw error;
-        }
+      return normalizeUsers(result?.data ?? result);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('TOKEN_EXPIRED')) {
+        throw error;
       }
     }
 
@@ -474,7 +461,7 @@ const getDetailHref = (target: SearchUser): string => {
 };
 
 export const UserSearchPage: React.FC = () => {
-  const { isLoggedIn, user } = useAuthStore();
+  const { isLoggedIn } = useAuthStore();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchUser[]>([]);
   const [loading, setLoading] = useState(false);
@@ -499,32 +486,8 @@ export const UserSearchPage: React.FC = () => {
       try {
         setLoading(true);
         setError('');
-        const users = await fetchByNickname(keyword);
-
-        if (users.length > 0) {
-          setResults(users.slice(0, 10));
-          return;
-        }
-
-        if (user && user.nickname.toLowerCase().includes(keyword.toLowerCase())) {
-          setResults([
-            {
-              id: user.id,
-              nickname: user.nickname,
-              email: user.email,
-              profileImageUrl: user.profileImageUrl,
-              role: user.role,
-              major: user.major,
-              admission: user.admission,
-              generation: user.generation,
-              isGraduated: user.isGraduated,
-              isAdmin: user.isAdmin,
-            },
-          ]);
-          return;
-        }
-
-        setResults([]);
+        const users = await searchUsers(keyword);
+        setResults(users.slice(0, 10));
       } catch (searchError) {
         console.error(searchError);
         setError('검색 결과를 불러오지 못했습니다.');
@@ -532,21 +495,21 @@ export const UserSearchPage: React.FC = () => {
       } finally {
         setLoading(false);
       }
-    }, 220);
+    }, 180);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [isLoggedIn, keyword, user]);
+  }, [isLoggedIn, keyword]);
 
   return (
     <Container>
       <Card>
-        <Label>검색할 유저의 닉네임</Label>
+        <Label>검색할 유저의 닉네임 또는 이메일</Label>
         <Input
           value={query}
           onChange={event => setQuery(event.target.value)}
-          placeholder='닉네임을 입력하세요'
+          placeholder='닉네임 또는 이메일을 입력하세요'
         />
 
         {!isLoggedIn && <Info $error>로그인 후 사용할 수 있습니다.</Info>}
@@ -584,9 +547,7 @@ export const UserSearchPage: React.FC = () => {
 
                     <BadgeGroup>
                       {target.isAdmin && <Badge>관리자</Badge>}
-                      <OpenDetailLink href={detailHref} target='_blank' rel='noopener noreferrer'>
-                        세부사항
-                      </OpenDetailLink>
+                      <OpenDetailLink to={detailHref}>세부사항</OpenDetailLink>
                     </BadgeGroup>
                   </UserSummaryRow>
                 </UserItem>
