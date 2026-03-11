@@ -314,6 +314,20 @@ const formatDate = (dateString: string): string => {
   });
 };
 
+const getPreview = (content: string): string => {
+  const stripped = content
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/!\[[^\]]*]\([^)]+\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[*_~`>#-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (stripped.length <= 170) return stripped;
+  return `${stripped.slice(0, 170)}...`;
+};
+
 export const NoticesPage: React.FC = () => {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -426,7 +440,7 @@ export const NoticesPage: React.FC = () => {
 
                 {notice.author && <NoticeAuthor>작성자: {notice.author.nickname}</NoticeAuthor>}
 
-                <NoticePreview>{notice.content}</NoticePreview>
+                <NoticePreview>{getPreview(notice.content)}</NoticePreview>
 
                 {isAdmin && (
                   <NoticeActions>
