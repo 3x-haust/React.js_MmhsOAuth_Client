@@ -5,6 +5,7 @@ import rehypeRaw from 'rehype-raw';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
+import { z } from 'zod';
 
 import {
   Notice,
@@ -12,6 +13,7 @@ import {
   UpdateNoticeRequest,
   NoticeService,
 } from '@/features/notice/api/noticeService';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 
 interface NoticeFormProps {
   initialData?: Notice;
@@ -293,6 +295,10 @@ const SubmitButton = styled(BaseButton)`
 `;
 
 export const NoticeForm: React.FC<NoticeFormProps> = ({ initialData, onSubmit, isLoading }) => {
+  const noticeSchema = z.object({
+    title: z.string().trim().min(1, '제목을 입력해주세요.'),
+    content: z.string().trim().min(1, '내용을 입력해주세요.'),
+  });
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isActive, setIsActive] = useState(true);
@@ -312,14 +318,15 @@ export const NoticeForm: React.FC<NoticeFormProps> = ({ initialData, onSubmit, i
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!title.trim() || !content.trim()) {
-      alert('제목과 내용을 모두 입력해주세요.');
+    const parsed = noticeSchema.safeParse({ title, content });
+    if (!parsed.success) {
+      alert(parsed.error.issues[0]?.message ?? '입력값을 확인해주세요.');
       return;
     }
 
     const formData: CreateNoticeRequest | UpdateNoticeRequest = {
-      title,
-      content,
+      title: parsed.data.title,
+      content: parsed.data.content,
     };
 
     if (initialData) {
@@ -399,7 +406,10 @@ export const NoticeForm: React.FC<NoticeFormProps> = ({ initialData, onSubmit, i
   return (
     <Form onSubmit={handleSubmit}>
       <FormGroup>
-        <Label htmlFor='title'>제목</Label>
+        <Label htmlFor='title'>
+          제목
+          <RequiredMark>*</RequiredMark>
+        </Label>
         <Input
           id='title'
           type='text'
@@ -411,7 +421,10 @@ export const NoticeForm: React.FC<NoticeFormProps> = ({ initialData, onSubmit, i
       </FormGroup>
 
       <FormGroup>
-        <Label htmlFor='content'>내용</Label>
+        <Label htmlFor='content'>
+          내용
+          <RequiredMark>*</RequiredMark>
+        </Label>
         <Textarea
           id='content'
           ref={contentRef}

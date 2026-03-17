@@ -1,11 +1,39 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { z } from 'zod';
 
 import { useAuthStore } from '@/features/auth';
 import { getOAuthApp, updateOAuthApp, refreshToken, OAuthApp } from '@/features/oauth';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 
 export const EditOAuthAppPage = () => {
+  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
+  const urlRegex = /^https?:\/\/.+/;
+  const customUrlRegex = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[a-zA-Z0-9].*$/;
+  const oauthFormSchema = z.object({
+    serviceName: z.string().trim().min(1, '서비스 이름을 입력해주세요.'),
+    serviceDomain: z
+      .string()
+      .trim()
+      .min(1, '서비스 도메인을 입력해주세요.')
+      .refine(value => domainRegex.test(value), '유효한 도메인 형식이 아닙니다 (예: example.com).'),
+    scope: z.string().trim().min(1, '최소 하나의 권한 범위를 선택해주세요.'),
+    allowedUserType: z.enum(['all', 'student', 'teacher']),
+    redirectUris: z
+      .array(
+        z
+          .string()
+          .trim()
+          .min(1, '모든 리다이렉션 URL을 입력해주세요.')
+          .refine(
+            value => urlRegex.test(value) || customUrlRegex.test(value),
+            '모든 리다이렉션 URL은 http:// 또는 https://로 시작하거나 test://callback 형식이어야 합니다.',
+          ),
+      )
+      .min(1, '리다이렉션 URL을 최소 1개 이상 입력해주세요.'),
+  });
+
   const { id } = useParams<{ id: string }>();
   const [formData, setFormData] = useState<Omit<OAuthApp, 'id' | 'clientId' | 'clientSecret'>>({
     serviceName: '',
@@ -115,55 +143,20 @@ export const EditOAuthAppPage = () => {
     }));
   };
 
-  const validateForm = () => {
-    if (!formData.serviceName.trim()) {
-      setError('서비스 이름을 입력해주세요.');
-      return false;
-    }
-
-    if (!formData.serviceDomain.trim()) {
-      setError('서비스 도메인을 입력해주세요.');
-      return false;
-    }
-
-    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
-    if (!domainRegex.test(formData.serviceDomain)) {
-      setError('유효한 도메인 형식이 아닙니다 (예: example.com).');
-      return false;
-    }
-
-    if (formData.redirectUris.some(uri => !uri.trim())) {
-      setError('모든 리다이렉션 URL을 입력해주세요.');
-      return false;
-    }
-
-    const urlRegex = /^https?:\/\/.+/;
-    const customUrlRegex = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[a-zA-Z0-9].*$/;
-    if (formData.redirectUris.some(uri => !urlRegex.test(uri) && !customUrlRegex.test(uri))) {
-      setError(
-        '모든 리다이렉션 URL은 http:// 또는 https://로 시작하거나 test://callback 형식이어야 합니다.'
-      );
-      return false;
-    }
-
-    if (!formData.scope) {
-      setError('최소 하나의 권한 범위를 선택해주세요.');
-      return false;
-    }
-
-    return true;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    if (!validateForm() || !id) return;
+    if (!id) return;
+    const parsed = oauthFormSchema.safeParse(formData);
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? '입력값을 확인해주세요.');
+      return;
+    }
 
     setSubmitting(true);
 
     try {
-      const data = await updateOAuthApp(id, formData);
+      const data = await updateOAuthApp(id, parsed.data);
 
       if (data.status === 200) {
         navigate('/oauth/manage');
@@ -171,7 +164,7 @@ export const EditOAuthAppPage = () => {
         try {
           const refreshData = await refreshToken();
           login(refreshData.accessToken, refreshData.refreshToken);
-          const retriedData = await updateOAuthApp(id, formData);
+          const retriedData = await updateOAuthApp(id, parsed.data);
           if (retriedData.status === 200) {
             navigate('/oauth/manage');
             return;
@@ -254,7 +247,10 @@ export const EditOAuthAppPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label htmlFor='serviceName'>서비스 이름</Label>
+            <Label htmlFor='serviceName'>
+              서비스 이름
+              <RequiredMark>*</RequiredMark>
+            </Label>
             <Input
               id='serviceName'
               name='serviceName'
@@ -266,7 +262,10 @@ export const EditOAuthAppPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label htmlFor='serviceDomain'>서비스 도메인</Label>
+            <Label htmlFor='serviceDomain'>
+              서비스 도메인
+              <RequiredMark>*</RequiredMark>
+            </Label>
             <Input
               id='serviceDomain'
               name='serviceDomain'
@@ -279,7 +278,10 @@ export const EditOAuthAppPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label>권한 범위 (스코프)</Label>
+            <Label>
+              권한 범위 (스코프)
+              <RequiredMark>*</RequiredMark>
+            </Label>
             <CheckboxContainer>
               <CheckboxGroup>
                 <CheckboxLabel>
@@ -382,7 +384,10 @@ export const EditOAuthAppPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label htmlFor='allowedUserType'>허용 사용자 유형</Label>
+            <Label htmlFor='allowedUserType'>
+              허용 사용자 유형
+              <RequiredMark>*</RequiredMark>
+            </Label>
             <Select
               id='allowedUserType'
               name='allowedUserType'
@@ -397,7 +402,10 @@ export const EditOAuthAppPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label>리다이렉션 URL</Label>
+            <Label>
+              리다이렉션 URL
+              <RequiredMark>*</RequiredMark>
+            </Label>
             <RedirectContainer>
               {formData.redirectUris.map((uri, index) => (
                 <RedirectInputGroup key={index}>

@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { z } from 'zod';
 
 import { theme } from '@/app/styles/index';
 import { verifyResetToken, resetPasswordWithToken } from '@/features/auth/api';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 
 const PageContainer = styled.div`
   display: flex;
@@ -135,6 +137,16 @@ const Message = styled.div<MessageProps>`
 `;
 
 export const ResetPasswordPage: React.FC = () => {
+  const resetPasswordSchema = z
+    .object({
+      newPassword: z.string().trim().min(8, '비밀번호는 8자 이상이어야 합니다.'),
+      confirmPassword: z.string().trim().min(1, '비밀번호 확인을 입력해주세요.'),
+    })
+    .refine(values => values.newPassword === values.confirmPassword, {
+      message: '비밀번호가 일치하지 않습니다.',
+      path: ['confirmPassword'],
+    });
+
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState('');
@@ -187,11 +199,20 @@ export const ResetPasswordPage: React.FC = () => {
       return;
     }
 
+    const parsed = resetPasswordSchema.safeParse({ newPassword, confirmPassword });
+    if (!parsed.success) {
+      setMessage({
+        text: parsed.error.issues[0]?.message ?? '입력값을 확인해주세요.',
+        type: 'error',
+      });
+      return;
+    }
+
     setIsLoading(true);
     setMessage(null);
 
     try {
-      await resetPasswordWithToken(token, newPassword);
+      await resetPasswordWithToken(token, parsed.data.newPassword);
       setMessage({
         text: '비밀번호가 성공적으로 변경되었습니다. 몇 초 후 로그인 페이지로 이동합니다.',
         type: 'success',
@@ -235,7 +256,10 @@ export const ResetPasswordPage: React.FC = () => {
           ) : isTokenValid ? (
             <Form onSubmit={handleSubmit}>
               <FormGroup>
-                <Label htmlFor='new-password'>새 비밀번호</Label>
+                <Label htmlFor='new-password'>
+                  새 비밀번호
+                  <RequiredMark>*</RequiredMark>
+                </Label>
                 <Input
                   id='new-password'
                   type='password'
@@ -248,7 +272,10 @@ export const ResetPasswordPage: React.FC = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor='confirm-password'>비밀번호 확인</Label>
+                <Label htmlFor='confirm-password'>
+                  비밀번호 확인
+                  <RequiredMark>*</RequiredMark>
+                </Label>
                 <Input
                   id='confirm-password'
                   type='password'

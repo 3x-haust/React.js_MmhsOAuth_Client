@@ -3,12 +3,14 @@ import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
+import { z } from 'zod';
 
 import {
   CreateDeveloperDocRequest,
   DeveloperDoc,
   UpdateDeveloperDocRequest,
 } from '@/features/developer-doc';
+import { RequiredMark } from '@/shared/ui/RequiredMark';
 
 type DocFormProps = {
   initialData?: DeveloperDoc;
@@ -272,6 +274,10 @@ const SubmitButton = styled(BaseButton)`
 `;
 
 export const DocForm: React.FC<DocFormProps> = ({ initialData, onSubmit, isLoading }) => {
+  const docSchema = z.object({
+    title: z.string().trim().min(1, '제목을 입력해주세요.'),
+    content: z.string().trim().min(1, '내용을 입력해주세요.'),
+  });
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isPublished, setIsPublished] = useState(true);
@@ -288,14 +294,15 @@ export const DocForm: React.FC<DocFormProps> = ({ initialData, onSubmit, isLoadi
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!title.trim() || !content.trim()) {
-      alert('제목과 내용을 모두 입력해주세요.');
+    const parsed = docSchema.safeParse({ title, content });
+    if (!parsed.success) {
+      alert(parsed.error.issues[0]?.message ?? '입력값을 확인해주세요.');
       return;
     }
 
     const formData: CreateDeveloperDocRequest | UpdateDeveloperDocRequest = {
-      title,
-      content,
+      title: parsed.data.title,
+      content: parsed.data.content,
     };
 
     if (initialData) {
@@ -318,7 +325,10 @@ export const DocForm: React.FC<DocFormProps> = ({ initialData, onSubmit, isLoadi
   return (
     <Form onSubmit={handleSubmit}>
       <FormGroup>
-        <Label htmlFor='title'>제목</Label>
+        <Label htmlFor='title'>
+          제목
+          <RequiredMark>*</RequiredMark>
+        </Label>
         <Input
           id='title'
           type='text'
@@ -330,7 +340,10 @@ export const DocForm: React.FC<DocFormProps> = ({ initialData, onSubmit, isLoadi
       </FormGroup>
 
       <FormGroup>
-        <Label htmlFor='content'>내용</Label>
+        <Label htmlFor='content'>
+          내용
+          <RequiredMark>*</RequiredMark>
+        </Label>
         <GuideText>
           마크다운 문법을 지원합니다. 예: <code># 제목</code>, <code>```ts</code>, 표, 체크리스트
         </GuideText>
