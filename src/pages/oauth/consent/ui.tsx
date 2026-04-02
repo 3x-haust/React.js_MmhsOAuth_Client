@@ -213,8 +213,9 @@ const ConsentContainer = styled.div`
   max-width: 500px;
   padding: 30px;
   border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  background-color: white;
+  box-shadow: 0 4px 15px ${({ theme }) => theme.colors.ring};
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  background-color: ${({ theme }) => theme.colors.surface};
 `;
 
 const ServiceInfo = styled.div`
@@ -243,6 +244,7 @@ const ConsentMessage = styled.p`
   margin: 20px 0;
   font-size: 16px;
   line-height: 1.5;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const ScopeList = styled.ul`
@@ -255,7 +257,7 @@ const ScopeItem = styled.li`
   display: flex;
   align-items: flex-start;
   padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 
   &:last-child {
     border-bottom: none;
@@ -278,6 +280,7 @@ const ScopeIcon = styled.span`
 const ScopeName = styled.div`
   font-weight: bold;
   font-size: 14px;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const ScopeDescription = styled.div`
@@ -319,14 +322,14 @@ const ApproveButton = styled(Button)`
 `;
 
 const DenyButton = styled(Button)`
-  background-color: white;
+  background-color: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.secondaryText};
   border: 1px solid ${({ theme }) => theme.colors.border};
   flex: 1;
   margin-right: 10px;
 
   &:hover {
-    background-color: #f5f5f5;
+    background-color: ${({ theme }) => theme.colors.surfaceElevated};
   }
 `;
 
@@ -337,6 +340,7 @@ const LoadingText = styled.div`
 
 const ErrorContainer = styled.div`
   text-align: center;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const ErrorMessage = styled.div`
