@@ -734,7 +734,7 @@ export function ProfilePage() {
               {user?.isGraduated !== undefined && (
                 <ProfileInfoRow>
                   <ProfileLabel>졸업 여부</ProfileLabel>
-                  <ProfileValue>{user.isGraduated ? '졸업' : '재학 중'}</ProfileValue>
+                  <ProfileValue>{user.role === 'teacher' ? '재직중' : (user.isGraduated ? '졸업' : '재학 중')}</ProfileValue>
                 </ProfileInfoRow>
               )}
 

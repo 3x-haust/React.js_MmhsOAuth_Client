@@ -1031,7 +1031,7 @@ export const UserSearchDetailPage: React.FC = () => {
               </DetailItem>
               <DetailItem>
                 <DetailLabel>졸업 여부</DetailLabel>
-                <DetailValue>{getBoolLabel(target.isGraduated, '졸업', '재학')}</DetailValue>
+                <DetailValue>{target.role === 'teacher' ? '재직중' : getBoolLabel(target.isGraduated, '졸업', '재학')}</DetailValue>
               </DetailItem>
             </DetailGrid>
           </>
