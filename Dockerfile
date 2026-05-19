@@ -14,10 +14,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY package.json yarn.lock* ./
-RUN yarn install --production --frozen-lockfile && yarn global add vite
+RUN yarn install --frozen-lockfile && yarn global add vite
 
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/vite.config.js ./
+COPY vite.config.ts ./
+COPY tsconfig.json ./
 
 EXPOSE 3000
 CMD ["yarn", "start"]
