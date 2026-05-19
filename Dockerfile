@@ -14,7 +14,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY package.json yarn.lock* ./
-RUN yarn install --frozen-lockfile && yarn global add vite
+RUN yarn install --production --frozen-lockfile && yarn add vite @vitejs/plugin-react
 
 COPY --from=build /app/dist ./dist
 COPY vite.config.ts ./
