@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { z } from 'zod';
@@ -28,8 +28,8 @@ export const EditOAuthAppPage = () => {
           .min(1, '모든 리다이렉션 URL을 입력해주세요.')
           .refine(
             value => urlRegex.test(value) || customUrlRegex.test(value),
-            '모든 리다이렉션 URL은 http:// 또는 https://로 시작하거나 test://callback 형식이어야 합니다.',
-          ),
+            '모든 리다이렉션 URL은 http:// 또는 https://로 시작하거나 test://callback 형식이어야 합니다.'
+          )
       )
       .min(1, '리다이렉션 URL을 최소 1개 이상 입력해주세요.'),
   });
@@ -47,6 +47,8 @@ export const EditOAuthAppPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [toast, setToast] = useState('');
+  const toastTimerRef = useRef<number | null>(null);
   const navigate = useNavigate();
   const { login, logout, setIsAuthModalOpen } = useAuthStore();
 
@@ -97,6 +99,34 @@ export const EditOAuthAppPage = () => {
   useEffect(() => {
     fetchAppData();
   }, [fetchAppData]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = window.setTimeout(() => setToast(''), 2200);
+  }, []);
+
+  const copyToClipboard = useCallback(
+    async (value: string, label: string) => {
+      try {
+        await navigator.clipboard.writeText(value);
+        showToast(`${label}이 클립보드에 복사되었습니다.`);
+      } catch {
+        showToast(`${label} 복사에 실패했습니다.`);
+      }
+    },
+    [showToast]
+  );
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -210,6 +240,11 @@ export const EditOAuthAppPage = () => {
 
   return (
     <Container>
+      {toast && (
+        <Toast role='status' aria-live='polite'>
+          {toast}
+        </Toast>
+      )}
       <FormContainer>
         <FormHeader>
           <h1>OAuth 앱 수정</h1>
@@ -236,8 +271,7 @@ export const EditOAuthAppPage = () => {
                 type='button'
                 onClick={() => {
                   if (appData?.clientSecret) {
-                    navigator.clipboard.writeText(appData.clientSecret);
-                    alert('클라이언트 시크릿이 클립보드에 복사되었습니다.');
+                    void copyToClipboard(appData.clientSecret, '클라이언트 시크릿');
                   }
                 }}
               >
@@ -351,6 +385,20 @@ export const EditOAuthAppPage = () => {
                   <span>입학년도</span>
                 </CheckboxLabel>
                 <HelpText>사용자의 입학년도 정보에 접근</HelpText>
+              </CheckboxGroup>
+
+              <CheckboxGroup>
+                <CheckboxLabel>
+                  <Checkbox
+                    type='checkbox'
+                    name='scope'
+                    value='grade'
+                    checked={formData.scope.includes('grade')}
+                    onChange={handleScopeChange}
+                  />
+                  <span>학년</span>
+                </CheckboxLabel>
+                <HelpText>입학년도를 기준으로 계산된 현재 학년 정보에 접근</HelpText>
               </CheckboxGroup>
 
               <CheckboxGroup>
@@ -720,4 +768,27 @@ const LoadingText = styled.div`
   padding: 28px;
   font-size: 0.95rem;
   color: ${({ theme }) => theme.colors.secondaryText};
+`;
+
+const Toast = styled.div`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1200;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.text};
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.22);
+  font-size: 0.86rem;
+  font-weight: 700;
+
+  @media (max-width: 560px) {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
 `;

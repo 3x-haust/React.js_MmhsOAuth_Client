@@ -27,8 +27,8 @@ export const NewOAuthAppPage = () => {
           .min(1, '모든 리다이렉션 URL을 입력해주세요.')
           .refine(
             value => urlRegex.test(value) || customUrlRegex.test(value),
-            '모든 리다이렉션 URL은 http:// 또는 https://로 시작하거나 test://callback 형식이어야 합니다.',
-          ),
+            '모든 리다이렉션 URL은 http:// 또는 https://로 시작하거나 test://callback 형식이어야 합니다.'
+          )
       )
       .min(1, '리다이렉션 URL을 최소 1개 이상 입력해주세요.'),
   });
@@ -233,6 +233,20 @@ export const NewOAuthAppPage = () => {
                   <span>입학년도</span>
                 </CheckboxLabel>
                 <HelpText>사용자의 입학년도 정보에 접근</HelpText>
+              </CheckboxGroup>
+
+              <CheckboxGroup>
+                <CheckboxLabel>
+                  <Checkbox
+                    type='checkbox'
+                    name='scope'
+                    value='grade'
+                    checked={formData.scope.includes('grade')}
+                    onChange={handleScopeChange}
+                  />
+                  <span>학년</span>
+                </CheckboxLabel>
+                <HelpText>입학년도를 기준으로 계산된 현재 학년 정보에 접근</HelpText>
               </CheckboxGroup>
 
               <CheckboxGroup>

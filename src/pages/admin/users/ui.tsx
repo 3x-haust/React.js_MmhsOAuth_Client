@@ -172,6 +172,12 @@ const MessageCard = styled.section<{ $error?: boolean }>`
 
 const getRoleLabel = (role: User['role']) => (role === 'student' ? '학생' : '교사');
 
+const getGradeLabel = (target: User) => {
+  if (target.role === 'teacher') return '-';
+  if (target.isGraduated) return target.graduationYear ? `${target.graduationYear}년 졸업` : '졸업';
+  return target.grade ? `${target.grade}학년` : '-';
+};
+
 const getMajorLabel = (major: User['major']) => {
   if (major === 'software') return '소프트웨어';
   if (major === 'design') return '디자인';
@@ -286,6 +292,7 @@ export function UserManagementPage() {
                 <Th>역할</Th>
                 <Th>전공</Th>
                 <Th>입학년도</Th>
+                <Th>학년</Th>
                 <Th>상태</Th>
                 <Th>관리</Th>
               </tr>
@@ -299,6 +306,7 @@ export function UserManagementPage() {
                   <Td>{getRoleLabel(target.role)}</Td>
                   <Td>{getMajorLabel(target.major)}</Td>
                   <Td>{target.admission || '-'}</Td>
+                  <Td>{getGradeLabel(target)}</Td>
                   <Td>
                     <StatusGroup>
                       {target.isAdmin && <StatusBadge $tone='admin'>관리자</StatusBadge>}

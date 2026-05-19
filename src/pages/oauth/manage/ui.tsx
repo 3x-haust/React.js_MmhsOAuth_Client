@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -24,6 +24,8 @@ export const ManageOAuthAppsPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [appToDelete, setAppToDelete] = useState<OAuthApp | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState('');
+  const toastTimerRef = useRef<number | null>(null);
 
   const navigate = useNavigate();
   const { login, logout, setIsAuthModalOpen } = useAuthStore();
@@ -67,6 +69,34 @@ export const ManageOAuthAppsPage = () => {
   useEffect(() => {
     fetchApps();
   }, [fetchApps]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = window.setTimeout(() => setToast(''), 2200);
+  }, []);
+
+  const copyToClipboard = useCallback(
+    async (value: string, label: string) => {
+      try {
+        await navigator.clipboard.writeText(value);
+        showToast(`${label}가 클립보드에 복사되었습니다.`);
+      } catch {
+        showToast(`${label} 복사에 실패했습니다.`);
+      }
+    },
+    [showToast]
+  );
 
   const handleDeleteApp = async () => {
     if (!appToDelete) return;
@@ -115,6 +145,7 @@ export const ManageOAuthAppsPage = () => {
       role: '역할',
       major: '전공',
       admission: '입학년도',
+      grade: '학년',
       generation: '기수',
       isGraduated: '졸업 여부',
     };
@@ -189,10 +220,7 @@ export const ManageOAuthAppsPage = () => {
                       <SecretContainer>
                         <SecretText>{app.clientId}</SecretText>
                         <CopyButton
-                          onClick={() => {
-                            navigator.clipboard.writeText(app.clientId);
-                            alert('클라이언트 ID가 클립보드에 복사되었습니다.');
-                          }}
+                          onClick={() => void copyToClipboard(app.clientId, '클라이언트 ID')}
                         >
                           복사
                         </CopyButton>
@@ -206,10 +234,9 @@ export const ManageOAuthAppsPage = () => {
                       <SecretContainer>
                         <SecretText>{app.clientSecret.substring(0, 8)}...</SecretText>
                         <CopyButton
-                          onClick={() => {
-                            navigator.clipboard.writeText(app.clientSecret);
-                            alert('클라이언트 시크릿이 클립보드에 복사되었습니다.');
-                          }}
+                          onClick={() =>
+                            void copyToClipboard(app.clientSecret, '클라이언트 시크릿')
+                          }
                         >
                           복사
                         </CopyButton>
@@ -259,6 +286,12 @@ export const ManageOAuthAppsPage = () => {
           </AppGrid>
         )}
       </AppsSection>
+
+      {toast && (
+        <Toast role='status' aria-live='polite'>
+          {toast}
+        </Toast>
+      )}
 
       {showDeleteModal && appToDelete && (
         <ModalOverlay>
@@ -622,5 +655,28 @@ const ConfirmDeleteButton = styled.button`
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+`;
+
+const Toast = styled.div`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1200;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.text};
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.22);
+  font-size: 0.86rem;
+  font-weight: 700;
+
+  @media (max-width: 560px) {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
   }
 `;

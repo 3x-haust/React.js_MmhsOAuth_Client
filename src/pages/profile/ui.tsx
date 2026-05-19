@@ -615,6 +615,7 @@ export function ProfilePage() {
       role: '역할',
       major: '전공',
       admission: '입학년도',
+      grade: '학년',
       generation: '기수',
       isGraduated: '졸업 여부',
     };
@@ -725,6 +726,18 @@ export function ProfilePage() {
                   <ProfileValue>{user.admission}</ProfileValue>
                 </ProfileInfoRow>
               )}
+              {user?.grade && (
+                <ProfileInfoRow>
+                  <ProfileLabel>학년</ProfileLabel>
+                  <ProfileValue>{user.grade}학년</ProfileValue>
+                </ProfileInfoRow>
+              )}
+              {user?.graduationYear && (
+                <ProfileInfoRow>
+                  <ProfileLabel>졸업년도</ProfileLabel>
+                  <ProfileValue>{user.graduationYear}년</ProfileValue>
+                </ProfileInfoRow>
+              )}
               {user?.generation && (
                 <ProfileInfoRow>
                   <ProfileLabel>기수</ProfileLabel>
@@ -734,7 +747,9 @@ export function ProfilePage() {
               {user?.isGraduated !== undefined && (
                 <ProfileInfoRow>
                   <ProfileLabel>졸업 여부</ProfileLabel>
-                  <ProfileValue>{user.role === 'teacher' ? '재직중' : (user.isGraduated ? '졸업' : '재학 중')}</ProfileValue>
+                  <ProfileValue>
+                    {user.role === 'teacher' ? '재직중' : user.isGraduated ? '졸업' : '재학 중'}
+                  </ProfileValue>
                 </ProfileInfoRow>
               )}
 

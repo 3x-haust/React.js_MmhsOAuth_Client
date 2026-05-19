@@ -31,6 +31,8 @@ export interface User {
   major?: string;
   generation?: string;
   admission?: string;
+  grade?: number;
+  graduationYear?: number;
   isGraduated?: boolean;
   isActive: boolean;
   isAdmin: boolean;

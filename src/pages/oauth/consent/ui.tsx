@@ -143,6 +143,7 @@ export const ConsentPage = () => {
     role: '역할 (학생/교사)',
     major: '전공',
     admission: '입학년도',
+    grade: '학년',
     generation: '기수',
     isGraduated: '졸업 여부',
   };
@@ -178,6 +179,7 @@ export const ConsentPage = () => {
                   {scopeItem === 'role' && '앱이 사용자의 학교 내 역할(학생/교사)을 확인합니다.'}
                   {scopeItem === 'major' && '앱이 사용자의 전공 정보를 확인합니다.'}
                   {scopeItem === 'admission' && '앱이 사용자의 입학년도 정보를 확인합니다.'}
+                  {scopeItem === 'grade' && '앱이 사용자의 현재 학년 정보를 확인합니다.'}
                   {scopeItem === 'generation' && '앱이 사용자의 기수 정보를 확인합니다.'}
                   {scopeItem === 'isGraduated' && '앱이 사용자의 졸업 여부를 확인합니다.'}
                 </ScopeDescription>

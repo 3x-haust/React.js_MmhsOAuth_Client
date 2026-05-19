@@ -12,6 +12,8 @@ export interface User {
   major: 'software' | 'design' | 'web';
   generation?: number;
   admission?: number;
+  grade?: number;
+  graduationYear?: number;
   isGraduated?: boolean;
   isAdmin: boolean;
 }

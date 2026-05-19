@@ -15,6 +15,8 @@ type SearchUser = {
   major?: string;
   admission?: number | string;
   generation?: number | string;
+  grade?: number | string;
+  graduationYear?: number | string;
   isGraduated?: boolean;
   isAdmin?: boolean;
 };
@@ -390,6 +392,9 @@ const normalizeUser = (payload: unknown): SearchUser | null => {
     major: toStringValue(candidate.major),
     admission: toStringValue(candidate.admission) ?? toNumber(candidate.admission) ?? undefined,
     generation: toStringValue(candidate.generation) ?? toNumber(candidate.generation) ?? undefined,
+    grade: toStringValue(candidate.grade) ?? toNumber(candidate.grade) ?? undefined,
+    graduationYear:
+      toStringValue(candidate.graduationYear) ?? toNumber(candidate.graduationYear) ?? undefined,
     isGraduated: toBoolean(candidate.isGraduated),
     isAdmin: toBoolean(candidate.isAdmin),
   };
@@ -512,6 +517,9 @@ const normalizeRecentUsers = (payload: unknown): SearchUser[] => {
       admission: toStringValue(candidate.admission) ?? toNumber(candidate.admission) ?? undefined,
       generation:
         toStringValue(candidate.generation) ?? toNumber(candidate.generation) ?? undefined,
+      grade: toStringValue(candidate.grade) ?? toNumber(candidate.grade) ?? undefined,
+      graduationYear:
+        toStringValue(candidate.graduationYear) ?? toNumber(candidate.graduationYear) ?? undefined,
       isGraduated: toBoolean(candidate.isGraduated),
     });
   });
@@ -674,6 +682,8 @@ const encodeDetailPayload = (target: SearchUser): string => {
       major: target.major,
       admission: target.admission,
       generation: target.generation,
+      grade: target.grade,
+      graduationYear: target.graduationYear,
       isGraduated: target.isGraduated,
       isAdmin: target.isAdmin,
     });
@@ -1030,8 +1040,20 @@ export const UserSearchDetailPage: React.FC = () => {
                 <DetailValue>{toDisplayValue(target.generation)}</DetailValue>
               </DetailItem>
               <DetailItem>
+                <DetailLabel>학년</DetailLabel>
+                <DetailValue>{target.grade ? `${target.grade}학년` : '-'}</DetailValue>
+              </DetailItem>
+              <DetailItem>
+                <DetailLabel>졸업년도</DetailLabel>
+                <DetailValue>{toDisplayValue(target.graduationYear)}</DetailValue>
+              </DetailItem>
+              <DetailItem>
                 <DetailLabel>졸업 여부</DetailLabel>
-                <DetailValue>{target.role === 'teacher' ? '재직중' : getBoolLabel(target.isGraduated, '졸업', '재학')}</DetailValue>
+                <DetailValue>
+                  {target.role === 'teacher'
+                    ? '재직중'
+                    : getBoolLabel(target.isGraduated, '졸업', '재학')}
+                </DetailValue>
               </DetailItem>
             </DetailGrid>
           </>

@@ -128,6 +128,16 @@ const Message = styled.div<{ $type: 'error' | 'success' }>`
   font-size: 0.83rem;
 `;
 
+const ReadOnlyValue = styled.div`
+  min-height: 38px;
+  border-radius: 10px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.secondaryText};
+  padding: 9px 12px;
+  font-size: 0.86rem;
+`;
+
 const ButtonGroup = styled.div`
   margin-top: 2px;
   display: flex;
@@ -329,6 +339,21 @@ export function UserEditPage() {
                 value={userData.admission || ''}
                 onChange={handleInputChange}
               />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>현재 학년</Label>
+              <ReadOnlyValue>
+                {userData.role === 'teacher'
+                  ? '-'
+                  : userData.isGraduated
+                    ? userData.graduationYear
+                      ? `${userData.graduationYear}년 졸업`
+                      : '졸업'
+                    : userData.grade
+                      ? `${userData.grade}학년`
+                      : '입학년도 기준으로 자동 계산'}
+              </ReadOnlyValue>
             </FormGroup>
 
             <FormGroup>
