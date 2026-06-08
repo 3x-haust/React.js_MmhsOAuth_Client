@@ -50,6 +50,10 @@ export const ConsentPage = () => {
               approved: true,
               scope: scope,
             });
+            if (url.status !== 200 || !url.data?.url) {
+              setError(url.message || '권한 부여 요청 처리 중 오류가 발생했습니다.');
+              return;
+            }
             window.location.href = url.data.url;
             return;
           }
