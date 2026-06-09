@@ -807,18 +807,12 @@ export const UserSearchPage: React.FC = () => {
       return;
     }
 
-    if (keyword === '') {
-      setResults([]);
-      setError('');
-      return;
-    }
-
     const timer = window.setTimeout(async () => {
       try {
         setLoading(true);
         setError('');
         const users = await searchUsers(keyword);
-        setResults(users.slice(0, 10));
+        setResults(users);
       } catch (searchError) {
         console.error(searchError);
         setError('검색 결과를 불러오지 못했습니다.');
