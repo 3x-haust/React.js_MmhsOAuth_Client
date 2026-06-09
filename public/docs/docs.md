@@ -517,7 +517,7 @@ module.exports = router;
 - `grade`: 사용자의 현재 학년
 - `generation`: 사용자의 기수 정보
 - `isGraduated`: 사용자의 졸업 여부
-- `profileImageUrl`: 사용자의 프로필 이미지 URL
+- `profileImageUrl`: 사용자의 프로필 이미지 URL. 직접 업로드한 이미지가 없으면 자동 생성된 기본 배지 URL이 반환됩니다.
 
 ### Q: 토큰은 얼마나 오래 유효한가요?
 
