@@ -276,6 +276,20 @@ export const NewOAuthAppPage = () => {
                 </CheckboxLabel>
                 <HelpText>사용자의 졸업 여부에 접근</HelpText>
               </CheckboxGroup>
+
+              <CheckboxGroup>
+                <CheckboxLabel>
+                  <Checkbox
+                    type='checkbox'
+                    name='scope'
+                    value='profileImageUrl'
+                    checked={formData.scope.includes('profileImageUrl')}
+                    onChange={handleScopeChange}
+                  />
+                  <span>프로필 이미지 URL</span>
+                </CheckboxLabel>
+                <HelpText>사용자의 프로필 이미지 URL에 접근</HelpText>
+              </CheckboxGroup>
             </CheckboxContainer>
           </FormGroup>
 

@@ -618,6 +618,7 @@ export function ProfilePage() {
       grade: '학년',
       generation: '기수',
       isGraduated: '졸업 여부',
+      profileImageUrl: '프로필 이미지 URL',
     };
 
     return scope

@@ -150,6 +150,7 @@ export const ConsentPage = () => {
     grade: '학년',
     generation: '기수',
     isGraduated: '졸업 여부',
+    profileImageUrl: '프로필 이미지 URL',
   };
 
   return (
@@ -186,6 +187,8 @@ export const ConsentPage = () => {
                   {scopeItem === 'grade' && '앱이 사용자의 현재 학년 정보를 확인합니다.'}
                   {scopeItem === 'generation' && '앱이 사용자의 기수 정보를 확인합니다.'}
                   {scopeItem === 'isGraduated' && '앱이 사용자의 졸업 여부를 확인합니다.'}
+                  {scopeItem === 'profileImageUrl' &&
+                    '앱이 사용자의 프로필 이미지 URL을 확인합니다.'}
                 </ScopeDescription>
               </div>
             </ScopeItem>

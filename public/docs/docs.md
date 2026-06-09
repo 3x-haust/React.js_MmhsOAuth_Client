@@ -514,8 +514,10 @@ module.exports = router;
 - `role`: 사용자의 역할 (학생/교사)
 - `major`: 사용자의 전공 정보
 - `admission`: 사용자의 입학년도
+- `grade`: 사용자의 현재 학년
 - `generation`: 사용자의 기수 정보
 - `isGraduated`: 사용자의 졸업 여부
+- `profileImageUrl`: 사용자의 프로필 이미지 URL
 
 ### Q: 토큰은 얼마나 오래 유효한가요?
 
