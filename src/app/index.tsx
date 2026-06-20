@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/features/auth';
 import { AdminDashboardPage, UserEditPage, UserManagementPage } from '@/pages/admin';
 import { CreateDocPage, DocDetailPage, DocsPage, EditDocPage } from '@/pages/docs';
+import { HomePage } from '@/pages/home';
 import { LoginPage } from '@/pages/login';
 import { NotFoundPage } from '@/pages/notfound';
 import { CreateNoticePage, EditNoticePage, NoticeDetailPage, NoticesPage } from '@/pages/notices';
@@ -19,7 +20,7 @@ import { UserSearchDetailPage, UserSearchPage } from '@/pages/user-search';
 import { ShellLayout } from '@/widgets';
 
 const getPageName = (path: string): string => {
-  if (path === '/') return 'OAuth 앱 관리';
+  if (path === '/' || path.startsWith('/dashboard')) return '대시보드';
   if (path.startsWith('/oauth/manage')) return 'OAuth 앱 관리';
   if (path.startsWith('/oauth/new')) return 'OAuth 앱 생성';
   if (path.startsWith('/oauth/edit')) return 'OAuth 앱 편집';
@@ -58,7 +59,12 @@ const saveRecentPage = (path: string) => {
 
     localStorage.setItem('recentPages', JSON.stringify(next.slice(0, 10)));
   } catch (error) {
-    console.error('Failed to save recent pages:', error);
+    if (error instanceof Error) {
+      console.error('Failed to save recent pages:', error);
+      return;
+    }
+
+    console.error('Failed to save recent pages with non-error value');
   }
 };
 
@@ -82,7 +88,8 @@ const App = () => {
       <Route path='/reset-password/:token' element={<ResetPasswordPage />} />
 
       <Route element={<ShellLayout />}>
-        <Route path='/' element={<Navigate to='/oauth/manage' replace />} />
+        <Route path='/' element={<Navigate to='/dashboard' replace />} />
+        <Route path='/dashboard' element={<HomePage />} />
         <Route path='/user-search' element={<UserSearchPage />} />
         <Route path='/user-search/detail' element={<UserSearchDetailPage />} />
         <Route path='/oauth/manage' element={<ManageOAuthAppsPage />} />

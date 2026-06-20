@@ -98,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <SidebarContainer $compact={compact}>
-      <Brand to='/oauth/manage' onClick={onNavigate}>
+      <Brand to='/dashboard' onClick={onNavigate}>
         MMHS OAuth
       </Brand>
 

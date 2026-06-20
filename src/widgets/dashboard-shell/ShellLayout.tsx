@@ -46,7 +46,9 @@ const Main = styled.main<{ $blocked: boolean }>`
 `;
 
 const getPageMeta = (pathname: string): { title: string; subtitle: string } => {
-  if (pathname === '/') return { title: 'OAuth 클라이언트', subtitle: '등록된 클라이언트 관리' };
+  if (pathname === '/' || pathname.startsWith('/dashboard')) {
+    return { title: '대시보드', subtitle: '서비스 현황과 최근 활동' };
+  }
   if (pathname.startsWith('/user-search')) {
     return { title: '유저 검색', subtitle: '닉네임 기준 사용자 조회' };
   }
@@ -72,6 +74,7 @@ const getPageMeta = (pathname: string): { title: string; subtitle: string } => {
 };
 
 const navigationItems: NavigationItem[] = [
+  { id: 'dashboard', label: '대시보드', to: '/dashboard' },
   { id: 'oauth', label: 'OAuth 클라이언트', to: '/oauth/manage' },
   { id: 'user-search', label: '유저 검색', to: '/user-search' },
   { id: 'docs', label: '개발 문서', to: '/docs' },
