@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { buildLoginRedirectUrl } from './redirect';
+
 import { useAuthStore } from '@/features/auth';
 import {
   logIn,
@@ -149,19 +151,7 @@ export const LoginPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { login } = useAuthStore();
-  const queryParams = new URLSearchParams(location.search);
-  const redirectUrl = queryParams.get('redirect') || '';
-  const fullRedirectUrl = redirectUrl
-    ? redirectUrl +
-      '&response_type=' +
-      queryParams.get('response_type') +
-      '&state=' +
-      queryParams.get('state') +
-      '&redirect_uri=' +
-      queryParams.get('redirect_uri') +
-      '&scope=' +
-      queryParams.get('scope')
-    : '';
+  const loginRedirectUrl = buildLoginRedirectUrl(location.search);
 
   useEffect(() => {
     setFormData({ email: '', nickname: '', password: '', code: '' });
@@ -292,15 +282,20 @@ export const LoginPage = () => {
               login(accessToken, refreshToken);
             }
           } catch (error) {
-            console.error('Failed to fetch user info:', error);
+            if (error instanceof Error) {
+              console.error('Failed to fetch user info:', error);
+            } else {
+              console.error('Failed to fetch user info with non-error value');
+            }
+
             login(accessToken, refreshToken);
           }
 
-          if (fullRedirectUrl) {
-            if (fullRedirectUrl.startsWith('/')) {
-              navigate(fullRedirectUrl);
+          if (loginRedirectUrl) {
+            if (loginRedirectUrl.startsWith('/')) {
+              navigate(loginRedirectUrl);
             } else {
-              window.location.href = fullRedirectUrl;
+              window.location.href = loginRedirectUrl;
             }
           } else {
             navigate('/');
