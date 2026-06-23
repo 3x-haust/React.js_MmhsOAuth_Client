@@ -178,10 +178,11 @@ const getGradeLabel = (target: User) => {
   return target.grade ? `${target.grade}학년` : '-';
 };
 
-const getMajorLabel = (major: User['major']) => {
-  if (major === 'software') return '소프트웨어';
-  if (major === 'design') return '디자인';
-  if (major === 'web') return '웹';
+const getMajorLabel = (target: User) => {
+  if (target.role === 'teacher') return '-';
+  if (target.major === 'software') return '소프트웨어';
+  if (target.major === 'design') return '디자인';
+  if (target.major === 'web') return '웹';
   return '-';
 };
 
@@ -304,7 +305,7 @@ export function UserManagementPage() {
                   <Td>{target.email}</Td>
                   <Td>{target.nickname}</Td>
                   <Td>{getRoleLabel(target.role)}</Td>
-                  <Td>{getMajorLabel(target.major)}</Td>
+                  <Td>{getMajorLabel(target)}</Td>
                   <Td>{target.admission || '-'}</Td>
                   <Td>{getGradeLabel(target)}</Td>
                   <Td>

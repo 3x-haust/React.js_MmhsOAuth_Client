@@ -9,7 +9,7 @@ export interface User {
   nickname: string;
   profileImageUrl?: string | null;
   role: 'student' | 'teacher';
-  major: 'software' | 'design' | 'web';
+  major?: 'software' | 'design' | 'web';
   generation?: number;
   admission?: number;
   grade?: number;
@@ -73,7 +73,8 @@ export const useAuthStore = create<AuthStore>(set => ({
       }
       return;
     } catch (error) {
-      console.error('Failed to refresh user info:', error);
+      const safeError = error instanceof Error ? error : new Error(String(error));
+      console.error('Failed to refresh user info:', safeError);
     }
   },
 
@@ -104,7 +105,8 @@ export const useAuthStore = create<AuthStore>(set => ({
         set({ user: userResponse.data });
       }
     } catch (error) {
-      console.error('Failed to fetch user info during initialization:', error);
+      const safeError = error instanceof Error ? error : new Error(String(error));
+      console.error('Failed to fetch user info during initialization:', safeError);
     } finally {
       set({ isAuthInitialized: true });
     }

@@ -440,7 +440,8 @@ export function ProfilePage() {
         setApps(response.data.filter(app => app.revokedAt === null));
       }
     } catch (error) {
-      console.error('Failed to fetch connected applications:', error);
+      const safeError = error instanceof Error ? error : new Error(String(error));
+      console.error('Failed to fetch connected applications:', safeError);
     } finally {
       setIsLoading(false);
     }
@@ -454,7 +455,8 @@ export function ProfilePage() {
         setHistory(response.data);
       }
     } catch (error) {
-      console.error('Failed to fetch permissions history:', error);
+      const safeError = error instanceof Error ? error : new Error(String(error));
+      console.error('Failed to fetch permissions history:', safeError);
     } finally {
       setIsLoading(false);
     }
@@ -469,7 +471,8 @@ export function ProfilePage() {
         fetchPermissionsHistory();
       }
     } catch (error) {
-      console.error('Failed to revoke application:', error);
+      const safeError = error instanceof Error ? error : new Error(String(error));
+      console.error('Failed to revoke application:', safeError);
     } finally {
       setIsRevoking(null);
     }
@@ -513,7 +516,8 @@ export function ProfilePage() {
         setMessage({ type: 'error', text: response.message });
       }
     } catch (error) {
-      console.error('Failed to upload profile image:', error);
+      const safeError = error instanceof Error ? error : new Error(String(error));
+      console.error('Failed to upload profile image:', safeError);
       setMessage({ type: 'error', text: '프로필 이미지 업로드에 실패했습니다.' });
     } finally {
       setIsAvatarUploading(false);
@@ -532,7 +536,8 @@ export function ProfilePage() {
         setMessage({ type: 'error', text: response.message });
       }
     } catch (error) {
-      console.error('Failed to delete profile image:', error);
+      const safeError = error instanceof Error ? error : new Error(String(error));
+      console.error('Failed to delete profile image:', safeError);
       setMessage({ type: 'error', text: '프로필 이미지 삭제에 실패했습니다.' });
     } finally {
       setIsAvatarDeleting(false);
@@ -577,11 +582,12 @@ export function ProfilePage() {
         setMessage({ type: 'error', text: response.message });
       }
     } catch (error) {
+      const safeError = error instanceof Error ? error : new Error(String(error));
       setMessage({
         type: 'error',
         text: '프로필 업데이트 중 오류가 발생했습니다.',
       });
-      console.error('Profile update error:', error);
+      console.error('Profile update error:', safeError);
     } finally {
       setIsSubmitting(false);
     }
@@ -715,7 +721,7 @@ export function ProfilePage() {
                 <ProfileLabel>닉네임</ProfileLabel>
                 <ProfileValue>{nickname}</ProfileValue>
               </ProfileInfoRow>
-              {user?.major && (
+              {user?.role === 'student' && user.major && (
                 <ProfileInfoRow>
                   <ProfileLabel>전공</ProfileLabel>
                   <ProfileValue>{user.major}</ProfileValue>

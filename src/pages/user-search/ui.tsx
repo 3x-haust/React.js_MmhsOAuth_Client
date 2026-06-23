@@ -705,7 +705,7 @@ const decodeDetailPayload = (encodedPayload: string | null): SearchUser | null =
     const binary = atob(encodedPayload);
     const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
     const json = new TextDecoder().decode(bytes);
-    const parsed = JSON.parse(json) as unknown;
+    const parsed: unknown = JSON.parse(json);
     return normalizeUser(parsed);
   } catch {
     return null;
@@ -747,7 +747,8 @@ export const UserSearchPage: React.FC = () => {
         setRecentUsers(savedUsers);
       }
     } catch (error) {
-      console.error(error);
+      const safeError = error instanceof Error ? error : new Error(String(error));
+      console.error(safeError);
     }
   };
 
@@ -757,7 +758,8 @@ export const UserSearchPage: React.FC = () => {
     try {
       await clearRecentSearchedUsersFromServer();
     } catch (error) {
-      console.error(error);
+      const safeError = error instanceof Error ? error : new Error(String(error));
+      console.error(safeError);
       setRecentUsers(previousUsers);
     }
   };
@@ -768,7 +770,8 @@ export const UserSearchPage: React.FC = () => {
     try {
       await removeRecentSearchedUser(targetUserId);
     } catch (error) {
-      console.error(error);
+      const safeError = error instanceof Error ? error : new Error(String(error));
+      console.error(safeError);
       setRecentUsers(previousUsers);
     }
   };
@@ -788,7 +791,8 @@ export const UserSearchPage: React.FC = () => {
           setRecentUsers(users);
         }
       } catch (error) {
-        console.error(error);
+        const safeError = error instanceof Error ? error : new Error(String(error));
+        console.error(safeError);
       }
     };
 
@@ -814,7 +818,9 @@ export const UserSearchPage: React.FC = () => {
         const users = await searchUsers(keyword);
         setResults(users);
       } catch (searchError) {
-        console.error(searchError);
+        const safeError =
+          searchError instanceof Error ? searchError : new Error(String(searchError));
+        console.error(safeError);
         setError('검색 결과를 불러오지 못했습니다.');
         setResults([]);
       } finally {
@@ -1021,10 +1027,12 @@ export const UserSearchDetailPage: React.FC = () => {
                 <DetailLabel>역할</DetailLabel>
                 <DetailValue>{getRoleLabel(target.role)}</DetailValue>
               </DetailItem>
-              <DetailItem>
-                <DetailLabel>전공</DetailLabel>
-                <DetailValue>{getMajorLabel(target.major)}</DetailValue>
-              </DetailItem>
+              {target.role === 'student' && (
+                <DetailItem>
+                  <DetailLabel>전공</DetailLabel>
+                  <DetailValue>{getMajorLabel(target.major)}</DetailValue>
+                </DetailItem>
+              )}
               <DetailItem>
                 <DetailLabel>입학년도</DetailLabel>
                 <DetailValue>{toDisplayValue(target.admission)}</DetailValue>
