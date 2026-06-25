@@ -25,6 +25,11 @@ export interface AuthResponse {
 export interface User {
   id: number;
   email: string;
+  schoolEmail?: string;
+  personalEmail?: string | null;
+  personalEmailVerifiedAt?: string | null;
+  primaryEmail?: string;
+  requiresPersonalEmail?: boolean;
   nickname: string;
   profileImageUrl?: string | null;
   role: string;
@@ -68,7 +73,8 @@ export const refreshTokens = async (): Promise<string | null> => {
     }
     return null;
   } catch (error) {
-    console.error('Error refreshing token:', error);
+    const safeError = error instanceof Error ? error : new Error(String(error));
+    console.error('Error refreshing token:', safeError);
     return null;
   }
 };

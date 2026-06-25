@@ -222,6 +222,10 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     return regex.test(email);
   };
 
+  const isSchoolEmail = (email: string) => {
+    return email.trim().toLowerCase().endsWith('@e-mirim.hs.kr');
+  };
+
   const isFormValid = useMemo(() => {
     switch (mode) {
       case modes.LOGIN:
@@ -234,7 +238,10 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         };
       case modes.SIGNUP:
         return {
-          email: formData.email.trim() !== '' && isValidEmail(formData.email),
+          email:
+            formData.email.trim() !== '' &&
+            isValidEmail(formData.email) &&
+            isSchoolEmail(formData.email),
           nickname: !!formData.nickname.trim(),
           password: formData.password.trim().length >= 8,
           code: !!formData.code.trim(),
@@ -333,7 +340,9 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                   setUser(userInfoResponse.data);
                 }
               } catch (userInfoError) {
-                console.error('Failed to fetch user info:', userInfoError);
+                const safeError =
+                  userInfoError instanceof Error ? userInfoError : new Error(String(userInfoError));
+                console.error('Failed to fetch user info:', safeError);
               }
 
               onClose();
@@ -397,7 +406,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               autoComplete='username'
               autoCapitalize='none'
               autoCorrect='off'
-              placeholder='닉네임'
+              placeholder='닉네임 또는 이메일'
               value={formData.nickname}
               onChange={e => setFormData({ ...formData, nickname: e.target.value })}
               $invalid={!fieldValidity.nickname}
@@ -428,7 +437,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               type='email'
               name='email'
               autoComplete='email'
-              placeholder='이메일'
+              placeholder='학교 이메일'
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
               $invalid={!fieldValidity.email}
@@ -438,7 +447,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                 ? '이메일을 입력해주세요'
                 : fieldValidity.email
                   ? ''
-                  : '유효한 이메일을 입력해주세요'}
+                  : '학교 이메일(@e-mirim.hs.kr)을 입력해주세요'}
             </ValidationMessage>
 
             <Input
@@ -507,7 +516,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               type='email'
               name='email'
               autoComplete='email'
-              placeholder='이메일'
+              placeholder='학교 이메일 또는 개인 이메일'
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
               $invalid={!fieldValidity.email}
@@ -520,9 +529,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                   : '유효한 이메일을 입력해주세요'}
             </ValidationMessage>
 
-            <HelperText>
-              가입 시 사용한 이메일 주소를 입력하시면, 해당 이메일로 닉네임을 보내드립니다.
-            </HelperText>
+            <HelperText>학교 이메일 또는 등록한 개인 이메일로 닉네임을 보내드립니다.</HelperText>
           </>
         );
 
@@ -533,7 +540,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               type='email'
               name='email'
               autoComplete='email'
-              placeholder='이메일'
+              placeholder='학교 이메일 또는 개인 이메일'
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
               $invalid={!fieldValidity.email}
@@ -547,7 +554,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
             </ValidationMessage>
 
             <HelperText>
-              가입 시 사용한 이메일 주소를 입력하시면, 비밀번호 재설정 코드를 보내드립니다.
+              학교 이메일 또는 등록한 개인 이메일로 비밀번호 재설정 코드를 보내드립니다.
             </HelperText>
           </>
         );

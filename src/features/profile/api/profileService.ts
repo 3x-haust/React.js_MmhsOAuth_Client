@@ -15,6 +15,18 @@ export interface ProfileResponse {
   data?: User;
 }
 
+export interface PersonalEmailResponse {
+  status: number;
+  message: string;
+  data?: {
+    id: number;
+    personalEmail: string;
+    personalEmailVerifiedAt: string;
+    primaryEmail: string;
+    requiresPersonalEmail: boolean;
+  };
+}
+
 export interface ConnectedApp {
   id: number;
   clientId: string;
@@ -80,6 +92,65 @@ export const updateProfile = async (
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(profileData),
+    });
+
+    const data = await response.json();
+
+    if (data.message === 'TOKEN_EXPIRED') {
+      throw new Error('TOKEN_EXPIRED');
+    }
+
+    return data;
+  });
+};
+
+export const requestPersonalEmailCode = async (personalEmail: string): Promise<ProfileResponse> => {
+  return executeWithTokenRefresh(async token => {
+    if (!token) {
+      return {
+        status: 401,
+        message: '인증 토큰이 없습니다.',
+      };
+    }
+
+    const response = await fetch(`${API_URL}/api/v1/user/personal-email/code`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ personalEmail }),
+    });
+
+    const data = await response.json();
+
+    if (data.message === 'TOKEN_EXPIRED') {
+      throw new Error('TOKEN_EXPIRED');
+    }
+
+    return data;
+  });
+};
+
+export const verifyPersonalEmail = async (
+  personalEmail: string,
+  code: string
+): Promise<PersonalEmailResponse> => {
+  return executeWithTokenRefresh(async token => {
+    if (!token) {
+      return {
+        status: 401,
+        message: '인증 토큰이 없습니다.',
+      };
+    }
+
+    const response = await fetch(`${API_URL}/api/v1/user/personal-email`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ personalEmail, code }),
     });
 
     const data = await response.json();

@@ -14,6 +14,7 @@ import {
   updateProfile,
 } from '@/features/profile';
 import { API_URL } from '@/shared/api/constants';
+import { PersonalEmailPanel } from './PersonalEmailPanel';
 
 const Container = styled.div`
   max-width: 1080px;
@@ -616,7 +617,10 @@ export function ProfilePage() {
 
   const getScopeLabel = (scope: string) => {
     const scopeMap: { [key: string]: string } = {
-      email: '이메일',
+      email: '학교 이메일',
+      schoolEmail: '학교 이메일',
+      personalEmail: '개인 이메일',
+      primaryEmail: '기본 이메일',
       nickname: '닉네임',
       role: '역할',
       major: '전공',
@@ -713,8 +717,14 @@ export function ProfilePage() {
 
           {!isEditing ? (
             <>
+              {user && <PersonalEmailPanel user={user} onRegistered={refreshUser} />}
+
               <ProfileInfoRow>
-                <ProfileLabel>이메일</ProfileLabel>
+                <ProfileLabel>기본 이메일</ProfileLabel>
+                <ProfileValue>{user?.primaryEmail || user?.personalEmail || email}</ProfileValue>
+              </ProfileInfoRow>
+              <ProfileInfoRow>
+                <ProfileLabel>학교 이메일</ProfileLabel>
                 <ProfileValue>{email}</ProfileValue>
               </ProfileInfoRow>
               <ProfileInfoRow>
@@ -767,7 +777,7 @@ export function ProfilePage() {
           ) : (
             <form onSubmit={handleProfileUpdate}>
               <FormGroup>
-                <Label htmlFor='email'>이메일</Label>
+                <Label htmlFor='email'>학교 이메일</Label>
                 <Input id='email' type='email' value={email} disabled />
               </FormGroup>
 

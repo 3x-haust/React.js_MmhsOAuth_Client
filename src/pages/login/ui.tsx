@@ -179,6 +179,10 @@ export const LoginPage = () => {
     return regex.test(email);
   };
 
+  const isSchoolEmail = (email: string) => {
+    return email.trim().toLowerCase().endsWith('@e-mirim.hs.kr');
+  };
+
   const isFormValid = useMemo(() => {
     if (formMode === 'login') {
       return {
@@ -189,7 +193,10 @@ export const LoginPage = () => {
       };
     } else if (formMode === 'signup') {
       return {
-        email: formData.email.trim() !== '' && isValidEmail(formData.email),
+        email:
+          formData.email.trim() !== '' &&
+          isValidEmail(formData.email) &&
+          isSchoolEmail(formData.email),
         nickname: !!formData.nickname.trim(),
         password: formData.password.trim().length >= 8,
         code: !!formData.code.trim(),
@@ -269,6 +276,7 @@ export const LoginPage = () => {
           const data = responseData.data;
           const accessToken = typeof data === 'string' ? data : data?.accessToken;
           const refreshToken = typeof data === 'string' ? data : data?.refreshToken;
+          let requiresPersonalEmail = false;
 
           if (!accessToken || !refreshToken) {
             throw new Error('Authentication token not received');
@@ -277,6 +285,7 @@ export const LoginPage = () => {
           try {
             const userResponse = await getUserInfo(accessToken);
             if (userResponse.status === 200 && userResponse.data) {
+              requiresPersonalEmail = userResponse.data.requiresPersonalEmail === true;
               login(accessToken, refreshToken, userResponse.data);
             } else {
               login(accessToken, refreshToken);
@@ -298,7 +307,7 @@ export const LoginPage = () => {
               window.location.href = loginRedirectUrl;
             }
           } else {
-            navigate('/');
+            navigate(requiresPersonalEmail ? '/profile?tab=profile' : '/');
           }
         } else {
           showError('로그인 데이터가 올바르지 않습니다');
@@ -332,7 +341,7 @@ export const LoginPage = () => {
               autoComplete='username'
               autoCapitalize='none'
               autoCorrect='off'
-              placeholder='닉네임'
+              placeholder='닉네임 또는 이메일'
               value={formData.nickname}
               onChange={e => setFormData({ ...formData, nickname: e.target.value })}
               $invalid={!fieldValidity.nickname}
@@ -371,7 +380,7 @@ export const LoginPage = () => {
               type='email'
               name='email'
               autoComplete='email'
-              placeholder='이메일'
+              placeholder='학교 이메일'
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
               $invalid={!fieldValidity.email}
@@ -381,7 +390,7 @@ export const LoginPage = () => {
                 ? '이메일을 입력해주세요'
                 : fieldValidity.email
                   ? ''
-                  : '유효한 이메일을 입력해주세요'}
+                  : '학교 이메일(@e-mirim.hs.kr)을 입력해주세요'}
             </ValidationMessage>
 
             <Input
@@ -445,7 +454,7 @@ export const LoginPage = () => {
               type='email'
               name='email'
               autoComplete='email'
-              placeholder='이메일'
+              placeholder='학교 이메일 또는 개인 이메일'
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
               $invalid={!fieldValidity.email}
@@ -471,7 +480,7 @@ export const LoginPage = () => {
               type='email'
               name='email'
               autoComplete='email'
-              placeholder='이메일'
+              placeholder='학교 이메일 또는 개인 이메일'
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
               $invalid={!fieldValidity.email}

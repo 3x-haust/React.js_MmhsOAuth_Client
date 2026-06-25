@@ -73,7 +73,8 @@ export const ConsentPage = () => {
           setError(data.message || '클라이언트 정보를 가져오는데 실패했습니다.');
         }
       } catch (err) {
-        console.error('Error fetching client info:', err);
+        const safeError = err instanceof Error ? err : new Error(String(err));
+        console.error('Error fetching client info:', safeError);
         setError('클라이언트 정보를 가져오는데 실패했습니다.');
       } finally {
         setLoading(false);
@@ -113,7 +114,8 @@ export const ConsentPage = () => {
         setLoading(false);
       }
     } catch (err) {
-      console.error('Error during consent:', err);
+      const safeError = err instanceof Error ? err : new Error(String(err));
+      console.error('Error during consent:', safeError);
       setError('권한 부여 요청 처리 중 오류가 발생했습니다.');
       setLoading(false);
     }
@@ -142,7 +144,10 @@ export const ConsentPage = () => {
   const scopeItems = scope?.split(',').map(item => item.trim()) || [];
 
   const scopeDescriptions: Record<string, string> = {
-    email: '이메일 주소',
+    email: '학교 이메일',
+    schoolEmail: '학교 이메일',
+    personalEmail: '개인 이메일',
+    primaryEmail: '기본 이메일',
     nickname: '닉네임',
     role: '역할 (학생/교사)',
     major: '전공',
@@ -180,6 +185,11 @@ export const ConsentPage = () => {
                 <ScopeName>{scopeDescriptions[scopeItem] || scopeItem}</ScopeName>
                 <ScopeDescription>
                   {scopeItem === 'email' && '앱이 사용자의 학교 이메일 주소를 확인합니다.'}
+                  {scopeItem === 'schoolEmail' && '앱이 사용자의 학교 이메일 주소를 확인합니다.'}
+                  {scopeItem === 'personalEmail' &&
+                    '앱이 사용자의 인증된 개인 이메일 주소를 확인합니다.'}
+                  {scopeItem === 'primaryEmail' &&
+                    '앱이 사용자의 기본 연락용 이메일 주소를 확인합니다.'}
                   {scopeItem === 'nickname' && '앱이 사용자의 닉네임을 사용합니다.'}
                   {scopeItem === 'role' && '앱이 사용자의 학교 내 역할(학생/교사)을 확인합니다.'}
                   {scopeItem === 'major' && '앱이 사용자의 전공 정보를 확인합니다.'}

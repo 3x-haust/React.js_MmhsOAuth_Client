@@ -6,6 +6,11 @@ import { logOut, getUserInfo } from '@/features/auth/api';
 export interface User {
   id: number;
   email: string;
+  schoolEmail?: string;
+  personalEmail?: string | null;
+  personalEmailVerifiedAt?: string | null;
+  primaryEmail?: string;
+  requiresPersonalEmail?: boolean;
   nickname: string;
   profileImageUrl?: string | null;
   role: 'student' | 'teacher';

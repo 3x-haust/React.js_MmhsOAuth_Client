@@ -89,7 +89,8 @@ export const EditOAuthAppPage = () => {
         setError(data.message || '애플리케이션 정보를 불러오는데 실패했습니다.');
       }
     } catch (err) {
-      console.error('Error fetching application:', err);
+      const safeError = err instanceof Error ? err : new Error(String(err));
+      console.error('Error fetching application:', safeError);
       setError('애플리케이션 정보를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
@@ -211,7 +212,8 @@ export const EditOAuthAppPage = () => {
         setError(data.message || '애플리케이션 수정에 실패했습니다.');
       }
     } catch (err) {
-      console.error('Error updating OAuth app:', err);
+      const safeError = err instanceof Error ? err : new Error(String(err));
+      console.error('Error updating OAuth app:', safeError);
       setError('애플리케이션 수정 중 오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
@@ -326,9 +328,51 @@ export const EditOAuthAppPage = () => {
                     checked={formData.scope.includes('email')}
                     onChange={handleScopeChange}
                   />
-                  <span>이메일</span>
+                  <span>학교 이메일</span>
+                </CheckboxLabel>
+                <HelpText>기존 email 스코프와 호환되는 학교 이메일 주소에 접근</HelpText>
+              </CheckboxGroup>
+
+              <CheckboxGroup>
+                <CheckboxLabel>
+                  <Checkbox
+                    type='checkbox'
+                    name='scope'
+                    value='primaryEmail'
+                    checked={formData.scope.includes('primaryEmail')}
+                    onChange={handleScopeChange}
+                  />
+                  <span>기본 이메일</span>
+                </CheckboxLabel>
+                <HelpText>사용자가 기본으로 설정한 연락용 이메일 주소에 접근</HelpText>
+              </CheckboxGroup>
+
+              <CheckboxGroup>
+                <CheckboxLabel>
+                  <Checkbox
+                    type='checkbox'
+                    name='scope'
+                    value='schoolEmail'
+                    checked={formData.scope.includes('schoolEmail')}
+                    onChange={handleScopeChange}
+                  />
+                  <span>학교 이메일</span>
                 </CheckboxLabel>
                 <HelpText>사용자의 학교 이메일 주소에 접근</HelpText>
+              </CheckboxGroup>
+
+              <CheckboxGroup>
+                <CheckboxLabel>
+                  <Checkbox
+                    type='checkbox'
+                    name='scope'
+                    value='personalEmail'
+                    checked={formData.scope.includes('personalEmail')}
+                    onChange={handleScopeChange}
+                  />
+                  <span>개인 이메일</span>
+                </CheckboxLabel>
+                <HelpText>사용자가 인증한 개인 이메일 주소에 접근</HelpText>
               </CheckboxGroup>
 
               <CheckboxGroup>

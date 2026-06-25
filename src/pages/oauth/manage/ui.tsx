@@ -59,7 +59,8 @@ export const ManageOAuthAppsPage = () => {
         setError(data.message || '앱 목록을 불러오는데 실패했습니다.');
       }
     } catch (err) {
-      console.error('Error fetching OAuth apps:', err);
+      const safeError = err instanceof Error ? err : new Error(String(err));
+      console.error('Error fetching OAuth apps:', safeError);
       setError('앱 목록을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
@@ -122,7 +123,8 @@ export const ManageOAuthAppsPage = () => {
         setError(data.message || '앱 삭제에 실패했습니다.');
       }
     } catch (err) {
-      console.error('Error deleting OAuth app:', err);
+      const safeError = err instanceof Error ? err : new Error(String(err));
+      console.error('Error deleting OAuth app:', safeError);
       setError('앱 삭제 중 오류가 발생했습니다.');
     } finally {
       setDeleting(false);
@@ -140,7 +142,10 @@ export const ManageOAuthAppsPage = () => {
 
   const getScopeLabel = (scope: string) => {
     const scopeMap: { [key: string]: string } = {
-      email: '이메일',
+      email: '학교 이메일',
+      schoolEmail: '학교 이메일',
+      personalEmail: '개인 이메일',
+      primaryEmail: '기본 이메일',
       nickname: '닉네임',
       role: '역할',
       major: '전공',

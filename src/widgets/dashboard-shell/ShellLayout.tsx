@@ -45,6 +45,38 @@ const Main = styled.main<{ $blocked: boolean }>`
   user-select: ${({ $blocked }) => ($blocked ? 'none' : 'auto')};
 `;
 
+const PersonalEmailBanner = styled.div`
+  margin: 14px 18px 0;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  background: ${({ theme }) => theme.colors.warningLight};
+  color: ${({ theme }) => theme.colors.warning};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  word-break: keep-all;
+
+  @media (max-width: 640px) {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+`;
+
+const BannerButton = styled.button`
+  min-height: 34px;
+  padding: 0 0.8rem;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.warning};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.warning};
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+`;
+
 const getPageMeta = (pathname: string): { title: string; subtitle: string } => {
   if (pathname === '/' || pathname.startsWith('/dashboard')) {
     return { title: '대시보드', subtitle: '서비스 현황과 최근 활동' };
@@ -91,6 +123,11 @@ export const ShellLayout: React.FC = () => {
 
   const meta = useMemo(() => getPageMeta(location.pathname), [location.pathname]);
   const shouldOpenAuthModal = isAuthInitialized && !isLoggedIn && isAuthModalOpen;
+  const shouldShowPersonalEmailBanner =
+    isAuthInitialized &&
+    isLoggedIn &&
+    Boolean(user?.requiresPersonalEmail) &&
+    !location.pathname.startsWith('/profile');
 
   useEffect(() => {
     if (isAuthInitialized && !isLoggedIn && !isAuthModalOpen) {
@@ -135,6 +172,14 @@ export const ShellLayout: React.FC = () => {
           subtitle={meta.subtitle}
           onMenuOpen={() => setDrawerOpen(true)}
         />
+        {shouldShowPersonalEmailBanner && (
+          <PersonalEmailBanner>
+            <span>계정 안내와 복구를 받을 개인 이메일 인증이 필요합니다.</span>
+            <BannerButton type='button' onClick={() => navigate('/profile?tab=profile')}>
+              등록하기
+            </BannerButton>
+          </PersonalEmailBanner>
+        )}
         <Main $blocked={isAuthInitialized && !isLoggedIn}>
           <Outlet />
         </Main>

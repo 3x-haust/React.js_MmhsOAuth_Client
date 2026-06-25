@@ -36,7 +36,7 @@ export const NewOAuthAppPage = () => {
   const [formData, setFormData] = useState({
     serviceName: '',
     serviceDomain: '',
-    scope: 'email,nickname',
+    scope: 'primaryEmail,nickname',
     allowedUserType: 'all',
     redirectUris: [''],
   });
@@ -110,7 +110,8 @@ export const NewOAuthAppPage = () => {
         setError(data.message || '애플리케이션 등록에 실패했습니다.');
       }
     } catch (err) {
-      console.error('Error creating OAuth app:', err);
+      const safeError = err instanceof Error ? err : new Error(String(err));
+      console.error('Error creating OAuth app:', safeError);
       setError('애플리케이션 등록 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -174,9 +175,51 @@ export const NewOAuthAppPage = () => {
                     checked={formData.scope.includes('email')}
                     onChange={handleScopeChange}
                   />
-                  <span>이메일</span>
+                  <span>학교 이메일</span>
+                </CheckboxLabel>
+                <HelpText>기존 email 스코프와 호환되는 학교 이메일 주소에 접근</HelpText>
+              </CheckboxGroup>
+
+              <CheckboxGroup>
+                <CheckboxLabel>
+                  <Checkbox
+                    type='checkbox'
+                    name='scope'
+                    value='primaryEmail'
+                    checked={formData.scope.includes('primaryEmail')}
+                    onChange={handleScopeChange}
+                  />
+                  <span>기본 이메일</span>
+                </CheckboxLabel>
+                <HelpText>사용자가 기본으로 설정한 연락용 이메일 주소에 접근</HelpText>
+              </CheckboxGroup>
+
+              <CheckboxGroup>
+                <CheckboxLabel>
+                  <Checkbox
+                    type='checkbox'
+                    name='scope'
+                    value='schoolEmail'
+                    checked={formData.scope.includes('schoolEmail')}
+                    onChange={handleScopeChange}
+                  />
+                  <span>학교 이메일</span>
                 </CheckboxLabel>
                 <HelpText>사용자의 학교 이메일 주소에 접근</HelpText>
+              </CheckboxGroup>
+
+              <CheckboxGroup>
+                <CheckboxLabel>
+                  <Checkbox
+                    type='checkbox'
+                    name='scope'
+                    value='personalEmail'
+                    checked={formData.scope.includes('personalEmail')}
+                    onChange={handleScopeChange}
+                  />
+                  <span>개인 이메일</span>
+                </CheckboxLabel>
+                <HelpText>사용자가 인증한 개인 이메일 주소에 접근</HelpText>
               </CheckboxGroup>
 
               <CheckboxGroup>
