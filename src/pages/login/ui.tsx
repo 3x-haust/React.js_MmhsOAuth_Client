@@ -15,6 +15,7 @@ import {
   findNickname,
 } from '@/features/auth/api/index';
 import { storePasswordCredential } from '@/features/auth/store-password-credential';
+import { useFeedbackModal, type FeedbackTone } from '@/features/auth/useFeedbackModal';
 
 const PageContainer = styled.div`
   display: flex;
@@ -123,7 +124,7 @@ const FormFooter = styled.div`
   text-align: center;
 `;
 
-const ErrorMessage = styled.p<{ $tone: 'error' | 'success' }>`
+const ErrorMessage = styled.p<{ $tone: FeedbackTone }>`
   color: ${({ theme, $tone }) => ($tone === 'error' ? theme.colors.error : theme.colors.success)};
 `;
 
@@ -138,10 +139,8 @@ export const LoginPage = () => {
   });
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorTone, setErrorTone] = useState<'error' | 'success'>('error');
   const [formMode, setFormMode] = useState<FormMode>('login');
+  const feedback = useFeedbackModal();
   const [fieldValidity, setFieldValidity] = useState({
     email: false,
     nickname: false,
@@ -156,7 +155,6 @@ export const LoginPage = () => {
   useEffect(() => {
     setFormData({ email: '', nickname: '', password: '', code: '' });
     setTimeLeft(0);
-    setError('');
     setFieldValidity({
       email: false,
       nickname: false,
@@ -229,14 +227,8 @@ export const LoginPage = () => {
     setFieldValidity(isFormValid);
   }, [isFormValid]);
 
-  const showError = (message: string, tone: 'error' | 'success' = 'error') => {
-    setError(message);
-    setShowErrorModal(true);
-    setErrorTone(tone);
-    setTimeout(() => {
-      setShowErrorModal(false);
-      setError('');
-    }, 2000);
+  const showError = (message: string, tone: FeedbackTone = 'error') => {
+    feedback.show(message, tone);
   };
 
   const handleSendCode = async () => {
@@ -561,10 +553,10 @@ export const LoginPage = () => {
           <FormFooter>{renderFormFooter()}</FormFooter>
         </ContentWrapper>
       </PageContainer>
-      {showErrorModal && (
+      {feedback.isOpen && feedback.message.trim() && (
         <ErrorModal>
-          <ErrorMessage $tone={errorTone}>{error}</ErrorMessage>
-          <Button onClick={() => setShowErrorModal(false)}>확인</Button>
+          <ErrorMessage $tone={feedback.tone}>{feedback.message}</ErrorMessage>
+          <Button onClick={feedback.close}>확인</Button>
         </ErrorModal>
       )}
     </>

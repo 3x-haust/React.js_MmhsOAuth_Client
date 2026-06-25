@@ -12,6 +12,7 @@ import {
 import { storePasswordCredential } from '../store-password-credential';
 
 import { useAuthStore } from '@/features/auth/hooks';
+import { useFeedbackModal, type FeedbackTone } from '@/features/auth/useFeedbackModal';
 
 const ModalOverlay = styled.div<{ $isOpen: boolean }>`
   display: ${props => (props.$isOpen ? 'flex' : 'none')};
@@ -152,7 +153,7 @@ const Footer = styled.div`
   text-align: center;
 `;
 
-const ErrorMessage = styled.p<{ $tone: 'error' | 'success' }>`
+const ErrorMessage = styled.p<{ $tone: FeedbackTone }>`
   color: ${({ theme, $tone }) => ($tone === 'error' ? theme.colors.error : theme.colors.success)};
 `;
 
@@ -178,10 +179,9 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   });
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [errorTone, setErrorTone] = useState<'error' | 'success'>('error');
   const [mode, setMode] = useState(modes.LOGIN);
-  const [showErrorModal, setShowErrorModal] = useState(false);
+  const feedback = useFeedbackModal();
+  const closeFeedbackModal = feedback.close;
   const [fieldValidity, setFieldValidity] = useState({
     email: false,
     nickname: false,
@@ -197,7 +197,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       setFormData({ email: '', nickname: '', password: '', code: '', newPassword: '' });
       setTimeLeft(0);
       setMode(modes.LOGIN);
-      setError('');
+      closeFeedbackModal();
       setFieldValidity({
         email: false,
         nickname: false,
@@ -206,7 +206,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         newPassword: false,
       });
     }
-  }, [isOpen]);
+  }, [closeFeedbackModal, isOpen]);
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -278,11 +278,8 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     setFieldValidity(isFormValid);
   }, [isFormValid]);
 
-  const showError = (message: string, tone: 'error' | 'success' = 'error') => {
-    setError(message);
-    setErrorTone(tone);
-    setShowErrorModal(true);
-    setTimeout(() => setShowErrorModal(false), 2000);
+  const showError = (message: string, tone: FeedbackTone = 'error') => {
+    feedback.show(message, tone);
   };
 
   const handleSendCode = async () => {
@@ -374,6 +371,8 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     } catch (err) {
       if (err instanceof Error) {
         showError(err.message);
+      } else {
+        showError('알 수 없는 오류가 발생했습니다');
       }
     } finally {
       setLoading(false);
@@ -599,10 +598,10 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 
         <Footer>{renderFooter()}</Footer>
 
-        {showErrorModal && (
+        {feedback.isOpen && feedback.message.trim() && (
           <ErrorModal>
-            <ErrorMessage $tone={errorTone}>{error}</ErrorMessage>
-            <Button onClick={() => setShowErrorModal(false)}>확인</Button>
+            <ErrorMessage $tone={feedback.tone}>{feedback.message}</ErrorMessage>
+            <Button onClick={closeFeedbackModal}>확인</Button>
           </ErrorModal>
         )}
       </ModalContent>
