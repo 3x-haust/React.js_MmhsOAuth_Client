@@ -12,6 +12,18 @@ import {
   approveConsent,
 } from '@/features/oauth';
 
+const redirectToOAuthCallback = (url: string) => {
+  const link = document.createElement('a');
+  link.href = url;
+  link.rel = 'noreferrer';
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  window.location.replace(url);
+};
+
 export const ConsentPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -54,7 +66,7 @@ export const ConsentPage = () => {
               setError(url.message || '권한 부여 요청 처리 중 오류가 발생했습니다.');
               return;
             }
-            window.location.href = url.data.url;
+            redirectToOAuthCallback(url.data.url);
             return;
           }
 
@@ -97,7 +109,7 @@ export const ConsentPage = () => {
       });
 
       if (data.status === 200 && data.data?.url) {
-        window.location.href = data.data.url;
+        redirectToOAuthCallback(data.data.url);
       } else if (data.status === 401 && data.message === 'TOKEN_EXPIRED') {
         try {
           const refreshData = await refreshToken();
