@@ -1,5 +1,7 @@
 import Cookies from 'js-cookie';
 
+import { executeWithTokenRefresh } from '@/features/auth/api/authService';
+
 interface ClientInfo {
   id: number;
   clientId: string;
@@ -45,6 +47,39 @@ type ApplicationStatusResponse = {
   } | null;
 };
 
+const isTokenExpiredResponse = (data: unknown, httpStatus: number): boolean => {
+  const status = data && typeof data === 'object' && 'status' in data ? data.status : httpStatus;
+  const message = data && typeof data === 'object' && 'message' in data ? data.message : undefined;
+
+  return (
+    status === 401 ||
+    message === 'TOKEN_EXPIRED' ||
+    message === 'Token expired' ||
+    message === '토큰이 만료되었습니다.'
+  );
+};
+
+const fetchOAuthJson = async (path: string, init: RequestInit = {}) => {
+  return executeWithTokenRefresh(async token => {
+    const headers = new Headers(init.headers);
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}${path}`, {
+      ...init,
+      headers,
+    });
+    const data = await response.json();
+
+    if (isTokenExpiredResponse(data, response.status)) {
+      throw new Error('TOKEN_EXPIRED');
+    }
+
+    return data;
+  });
+};
+
 export const refreshToken = async () => {
   try {
     const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/auth/refresh`, {
@@ -59,8 +94,12 @@ export const refreshToken = async () => {
     const data = await response.json();
 
     if (data.status === 200 && data.data?.accessToken) {
+      const currentRefreshToken = Cookies.get('refreshToken');
       Cookies.set('accessToken', data.data.accessToken, { secure: true, sameSite: 'Strict' });
-      return data.data;
+      return {
+        ...data.data,
+        refreshToken: data.data.refreshToken || currentRefreshToken,
+      };
     } else {
       throw new Error(data.message || 'Failed to refresh token');
     }
@@ -71,125 +110,70 @@ export const refreshToken = async () => {
 };
 
 export const getClientInfo = async (clientId: string) => {
-  const res = await fetch(
-    `${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/client/${clientId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${Cookies.get('accessToken')}`,
-      },
-    }
-  );
-  return await res.json();
+  return fetchOAuthJson(`/api/v1/oauth-client/client/${clientId}`);
 };
 
 export const submitConsent = async (consentData: ConsentRequestPayload) => {
-  const res = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth/consent`, {
+  return fetchOAuthJson('/api/v1/oauth/consent', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${Cookies.get('accessToken')}`,
     },
     body: JSON.stringify(consentData),
   });
-
-  return await res.json();
 };
 
 export const approveConsent = async (consentData: ConsentRequestPayload) => {
-  const res = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth/consent/approve`, {
+  return fetchOAuthJson('/api/v1/oauth/consent/approve', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${Cookies.get('accessToken')}`,
     },
     body: JSON.stringify(consentData),
   });
-
-  return await res.json();
 };
 
 export const getOAuthApp = async (id: string) => {
-  const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${id}`, {
-    headers: {
-      Authorization: `Bearer ${Cookies.get('accessToken')}`,
-    },
-  });
-
-  return await response.json();
+  return fetchOAuthJson(`/api/v1/oauth-client/${id}`);
 };
 
 export const getOAuthApps = async () => {
-  const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client`, {
-    headers: {
-      Authorization: `Bearer ${Cookies.get('accessToken')}`,
-    },
-  });
-
-  return await response.json();
+  return fetchOAuthJson('/api/v1/oauth-client');
 };
 
 export const createOAuthApp = async (formData: OAuthAppFormData) => {
-  const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client`, {
+  return fetchOAuthJson('/api/v1/oauth-client', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${Cookies.get('accessToken')}`,
     },
     body: JSON.stringify(formData),
   });
-
-  return await response.json();
 };
 
 export const updateOAuthApp = async (id: string, formData: OAuthAppFormData) => {
-  const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${id}`, {
+  return fetchOAuthJson(`/api/v1/oauth-client/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${Cookies.get('accessToken')}`,
     },
     body: JSON.stringify(formData),
   });
-
-  return await response.json();
 };
 
 export const deleteOAuthApp = async (id: number) => {
-  const response = await fetch(`${import.meta.env.VITE_APP_SERVER_URL}/api/v1/oauth-client/${id}`, {
+  return fetchOAuthJson(`/api/v1/oauth-client/${id}`, {
     method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${Cookies.get('accessToken')}`,
-    },
   });
-
-  return await response.json();
 };
 
 export const checkApplicationStatus = async (
   clientId: string
 ): Promise<ApplicationStatusResponse> => {
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_APP_SERVER_URL}/api/v1/user/applications/${clientId}/status`,
-      {
-        headers: {
-          Authorization: `Bearer ${Cookies.get('accessToken')}`,
-        },
-      }
-    );
-
-    if (response.status === 401) {
-      try {
-        const refreshResult = await refreshToken();
-        if (refreshResult) {
-          return checkApplicationStatus(clientId);
-        }
-      } catch (error) {
-        console.error('토큰 갱신 실패:', error);
-      }
-    }
-
-    return (await response.json()) as ApplicationStatusResponse;
+    return (await fetchOAuthJson(
+      `/api/v1/user/applications/${clientId}/status`
+    )) as ApplicationStatusResponse;
   } catch (error) {
     console.error('애플리케이션 상태 확인 중 오류:', error);
     return {
