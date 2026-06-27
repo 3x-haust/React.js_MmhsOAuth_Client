@@ -7,7 +7,7 @@ import { createOAuthApp } from '@/features/oauth';
 import { RequiredMark } from '@/shared/ui/RequiredMark';
 
 export const NewOAuthAppPage = () => {
-  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
+  const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
   const urlRegex = /^https?:\/\/.+/;
   const customUrlRegex = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[a-zA-Z0-9].*$/;
   const oauthFormSchema = z.object({
